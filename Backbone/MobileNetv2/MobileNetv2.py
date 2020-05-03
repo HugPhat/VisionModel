@@ -4,13 +4,15 @@ import torch.functional as F
 from collections import OrderedDict
 
 class InvertedBlock(nn.Module):
-    def __init__(self, input_size, stride, factor, Id ):
+    def __init__(self, input_size, output_size, stride, factor, Id ):
         super(InvertedBlock, self).__init__()
         self.input_size = input_size
+        self.output_size = output_size
         self.stride = stride 
         self.factor = factor
         self.Id  = Id
         self.add = False
+        self.module = self.create_block()
     def create_block(self):
 
         DWs = self.input_size * self.factor
@@ -42,11 +44,16 @@ class InvertedBlock(nn.Module):
                                 nn.ReLU6(inplace=True))
         # projection
         module.add_module(_prefix + 'DW_CONV_' + str(self.Id),
-                          nn.Conv2d(DWs, DWs, kernel_size=1, padding=(1-1)//2, groups=self.factor, bias=False))
+                          nn.Conv2d(DWs, self.output_size, kernel_size=1, padding=(1-1)//2, groups=self.factor, bias=False))
         module.add_module(_prefix + 'DW_BN_' + str(self.Id),
                           nn.BatchNorm2d(DWs))
-
-
+        return module
+        
+    def forward(self, x):
+        if self.add:
+            return self.module(x) + x
+        else:
+            return self.module(x)
 class MobileNetv2(nn.Module):
     def __init__(self, input_size = 224):
         super(MobileNetv2, self).__init__()
