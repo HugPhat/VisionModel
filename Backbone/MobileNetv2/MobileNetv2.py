@@ -17,7 +17,7 @@ class InvertedBlock(nn.Module):
 
         DWs = self.input_size * self.factor
         module = nn.Sequential()
-        _prefix = 'InvertedBlock_{}_'.format(Id)
+        _prefix = "InvertedBlock_{}_".format(Id)
 
         if Id:
             module.add_module(_prefix + 'CONV_expand',
