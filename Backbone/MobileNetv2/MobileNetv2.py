@@ -45,7 +45,7 @@ class InvertedBlock(nn.Module):
                                 nn.ReLU6(inplace=True))
         # projection
         module.add_module(_prefix + 'DW_CONV_' + str(self.Id),
-                          nn.Conv2d(DWs, self.output_size, kernel_size=1, padding=(1-1)//2, groups=self.factor, bias=False))
+                          nn.Conv2d(DWs, self.output_size, kernel_size=1, padding=(1-1)//2, bias=False))
         module.add_module(_prefix + 'DW_BN_' + str(self.Id),
                           nn.BatchNorm2d(DWs))
         return module
