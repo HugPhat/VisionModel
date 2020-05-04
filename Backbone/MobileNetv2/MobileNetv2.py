@@ -31,11 +31,12 @@ class InvertedBlock(nn.Module):
         else:
             _prefix = 'EXPANDED_CONV_'
 
-        if self.stride == 2:
-            self.add = True
+        #if self.stride == 2:
+        #    self.add = False
             # Bug in padding -> ?
             #module.add(_prefix + 'pad', nn.ZeroPad2d(padding= 0))
-        
+        if (self.input_size == self.output_size) and self.stride == 1 :
+            self.add = True
         # depthwise 
         module.add_module(_prefix + 'DW_CONV_' + str(self.Id), \
                                 nn.Conv2d(DWs, DWs, kernel_size=3, padding= (3-1)//2, groups=self.factor, bias=False, stride= self.stride))
@@ -47,12 +48,13 @@ class InvertedBlock(nn.Module):
         module.add_module(_prefix + 'DW_CONV_' + str(self.Id),
                           nn.Conv2d(DWs, self.output_size, kernel_size=1, padding=(1-1)//2, bias=False))
         module.add_module(_prefix + 'DW_BN_' + str(self.Id),
-                          nn.BatchNorm2d(DWs))
+                          nn.BatchNorm2d(self.output_size))
         return module
         
     def forward(self, x):
+        inp = x
         if self.add:
-            return self.module(x) + x
+            return self.module(x) + inp
         else:
             return self.module(x)
         
@@ -86,8 +88,9 @@ class MobileNetv2(nn.Module):
         self.model = nn.ModuleList()
         self.blocks = list()
         prev_filter = self.firstBlock(fmodule) # first output filter 
-        self.model.append(fmodule)
         self.blocks.append('FirstBlock')
+        self.model.append(fmodule)
+        
         Id = 0
         for t, c, n, s in self.model_hyperparams:
             for block in range(n):
