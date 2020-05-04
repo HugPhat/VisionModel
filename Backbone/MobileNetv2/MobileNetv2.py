@@ -13,13 +13,14 @@ class InvertedBlock(nn.Module):
         self.Id  = Id
         self.add = False
         self.module = self.create_block()
+        
     def create_block(self):
 
         DWs = self.input_size * self.factor
         module = nn.Sequential()
-        _prefix = "InvertedBlock_{}_".format(Id)
+        _prefix = "InvertedBlock_{}_".format(self.Id)
 
-        if Id:
+        if self.Id:
             module.add_module(_prefix + 'CONV_expand',
                               nn.Conv2d(self.input_size, DWs,
                                         kernel_size=1, bias=False, padding=0))
@@ -30,10 +31,10 @@ class InvertedBlock(nn.Module):
         else:
             _prefix = 'EXPANDED_CONV_'
 
-        if stride == 2:
+        if self.stride == 2:
             self.add = True
             # Bug in padding -> ?
-            module.add(_prefix + 'pad', nn.ZeroPad2d(padding= 0))
+            #module.add(_prefix + 'pad', nn.ZeroPad2d(padding= 0))
         
         # depthwise 
         module.add_module(_prefix + 'DW_CONV_' + str(self.Id), \
@@ -54,30 +55,53 @@ class InvertedBlock(nn.Module):
             return self.module(x) + x
         else:
             return self.module(x)
+        
 class MobileNetv2(nn.Module):
-    def __init__(self, input_size = 224):
+    def __init__(self, input_size = 224, debug= False):
         super(MobileNetv2, self).__init__()
         self.input_size = input_size
-    
-    def firstBlock(self):
-        module = nn.Sequential()
-        module.add_module('ZeroPad_0', nn.ZeroPad2d(32))
-
-    def invertedBlock(self, Input, stride, factor, Id):
-        # Calculate parameters
+        self.debug = debug
+        self.model_hyperparams = [
+            # t, c, n, s
+            [1, 16, 1, 1],
+            [6, 24, 2, 2],
+            [6, 32, 3, 2],
+            [6, 64, 4, 2],
+            [6, 96, 3, 1],
+            [6, 160, 3, 2],
+            [6, 320, 1, 1]
+        ]
+        self.constructNet()
         
-
-
-
-
-
-
-    def strideBlock(self, id, stride):
-        pass
+    def firstBlock(self, module):
+        out_filter = 32
+        # 3: RGB image
+        module.add_module('FirstBlock_Conv2D', nn.Conv2d(3, out_filter, kernel_size= 3, stride=2, padding= (3-1)//2, bias=False))
+        module.add_module('FirstBlock_BN', nn.BatchNorm2d(out_filter))
+        module.add_module('FirstBlock_RELU6', nn.ReLU6(inplace=True))
+        return out_filter 
 
     def constructNet(self):
-        pass
+        fmodule = nn.Sequential()
+        self.model = nn.ModuleList()
+        self.blocks = list()
+        prev_filter = self.firstBlock(fmodule) # first output filter 
+        self.model.append(fmodule)
+        self.blocks.append('FirstBlock')
+        Id = 0
+        for t, c, n, s in self.model_hyperparams:
+            for block in range(n):
+                if self.debug:
+                    print(f'[{n}] with Id {Id}==> block {block} : [in]: {prev_filter}, [out]: {c}')
+                self.model.append(InvertedBlock(input_size=prev_filter, output_size= c, stride= s, factor= t, Id= Id))
+                self.blocks.append('InvertedBlock_' + str(Id))
+                Id+=1
+                prev_filter = c
 
     def forward(self, x):
-        pass
-    
+        for block_name, module in zip(self.blocks, self.model):
+            if self.debug:
+                print(f'We reach {block_name}')
+            x = module(x)
+            
+        return x    
