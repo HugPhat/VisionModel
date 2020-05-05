@@ -10,4 +10,6 @@ model = MobileNetv2(debug = True)
 
 dummy_input = torch.ones((1, 3, 224, 224))
 
-model(dummy_input)
+x = model(dummy_input)
+print(x.size())
+#print(model)

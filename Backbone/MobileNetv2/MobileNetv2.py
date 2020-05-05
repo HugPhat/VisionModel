@@ -12,6 +12,7 @@ class InvertedBlock(nn.Module):
         self.factor = factor
         self.Id  = Id
         self.add = False
+        
         self.module = self.create_block()
         
     def create_block(self):
@@ -23,31 +24,28 @@ class InvertedBlock(nn.Module):
         if self.Id:
             module.add_module(_prefix + 'CONV_expand',
                               nn.Conv2d(self.input_size, DWs,
-                                        kernel_size=1, bias=False, padding=0))
+                                        kernel_size=1, bias=False))
             module.add_module(_prefix + 'BN_expand',
                               nn.BatchNorm2d(DWs))
             module.add_module(_prefix + 'RELU6_expand',
                               nn.ReLU6(inplace=True))
         else:
             _prefix = 'EXPANDED_CONV_'
-
-        #if self.stride == 2:
-        #    self.add = False
-            # Bug in padding -> ?
-            #module.add(_prefix + 'pad', nn.ZeroPad2d(padding= 0))
+            
         if (self.input_size == self.output_size) and self.stride == 1 :
             self.add = True
         # depthwise 
+        pad =  (3-1)//2 #if self.stride == 1 else ()
         module.add_module(_prefix + 'DW_CONV_' + str(self.Id), \
-                                nn.Conv2d(DWs, DWs, kernel_size=3, padding= (3-1)//2, groups=self.factor, bias=False, stride= self.stride))
+                                nn.Conv2d(DWs, DWs, kernel_size=3, stride= (self.stride, self.stride), padding= pad, groups=self.factor, bias=False))
         module.add_module(_prefix + 'DW_BN_' + str(self.Id), \
                                 nn.BatchNorm2d(DWs))
         module.add_module(_prefix + 'DW_RELU6_' + str(self.Id), \
                                 nn.ReLU6(inplace=True))
         # projection
-        module.add_module(_prefix + 'DW_CONV_' + str(self.Id),
+        module.add_module(_prefix + 'PRJ_CONV_' + str(self.Id),
                           nn.Conv2d(DWs, self.output_size, kernel_size=1, padding=(1-1)//2, bias=False))
-        module.add_module(_prefix + 'DW_BN_' + str(self.Id),
+        module.add_module(_prefix + 'PRJ_BN_' + str(self.Id),
                           nn.BatchNorm2d(self.output_size))
         return module
         
@@ -94,9 +92,10 @@ class MobileNetv2(nn.Module):
         Id = 0
         for t, c, n, s in self.model_hyperparams:
             for block in range(n):
+                stride = s if block == 0 else 1
                 if self.debug:
                     print(f'[{n}] with Id {Id}==> block {block} : [in]: {prev_filter}, [out]: {c}')
-                self.model.append(InvertedBlock(input_size=prev_filter, output_size= c, stride= s, factor= t, Id= Id))
+                self.model.append(InvertedBlock(input_size=prev_filter, output_size= c, stride= stride, factor= t, Id= Id))
                 self.blocks.append('InvertedBlock_' + str(Id))
                 Id+=1
                 prev_filter = c
@@ -105,6 +104,9 @@ class MobileNetv2(nn.Module):
         for block_name, module in zip(self.blocks, self.model):
             if self.debug:
                 print(f'We reach {block_name}')
+                print(f'input size [{x.size()}]')
             x = module(x)
+            if self.debug:
+                print(f'output size [{x.size()}]')
             
         return x    
