@@ -75,3 +75,27 @@ class TransitionDown(nn.Module):
     
     def forward(self, x):
         return self.module(x)
+
+'''
+class TransitionUp(nn.Module):
+    def __init__(self, n_inp, n_out, stride = 2):
+        super(TransitionUp, self).__init__()
+
+        self.TU = nn.ConvTranspose2d(in_channels=n_inp, 
+                                     out_channels=n_out,
+                                     kernel_size=(3,3),
+                                     stride=stride,)
+
+    def forward(self, x):
+        x = self.TU(x)
+        return x
+'''
+
+class TransitionUp(nn.Sequential):
+    def __init__(self, n_inp, n_out):
+        super(TransitionUp, self).__init__()
+        self.add_module('norm', nn.BatchNorm2d(n_inp))
+        self.add_module('relu', nn.ReLU(inplace=True))
+        self.add_module('conv', nn.Conv2d(n_inp, n_out,
+                                          kernel_size=1, stride=1, bias=False))
+        self.add_module('pool', nn.AvgPool2d(kernel_size=2, stride=2))
