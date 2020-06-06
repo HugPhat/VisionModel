@@ -37,7 +37,9 @@ class InvertedBlock(nn.Module):
         # depthwise 
         pad =  (3-1)//2 #if self.stride == 1 else ()
         module.add_module(_prefix + 'DW_CONV_' + str(self.Id), \
-                                nn.Conv2d(DWs, DWs, kernel_size=3, stride= (self.stride, self.stride), padding= pad, groups=self.factor, bias=False))
+                                nn.Conv2d(DWs, DWs, kernel_size=3, 
+                                            stride= (self.stride, self.stride), 
+                                            padding= pad, groups=self.factor, bias=False))
         module.add_module(_prefix + 'DW_BN_' + str(self.Id), \
                                 nn.BatchNorm2d(DWs))
         module.add_module(_prefix + 'DW_RELU6_' + str(self.Id), \
@@ -76,7 +78,11 @@ class MobileNetv2(nn.Module):
     def firstBlock(self, module):
         out_filter = 32
         # 3: RGB image
-        module.add_module('FirstBlock_Conv2D', nn.Conv2d(3, out_filter, kernel_size= 3, stride=2, padding= (3-1)//2, bias=False))
+        module.add_module('FirstBlock_Conv2D', nn.Conv2d(3, out_filter, 
+                                                kernel_size= 3, 
+                                                stride=2, 
+                                                padding= (3-1)//2, 
+                                                bias=False))
         module.add_module('FirstBlock_BN', nn.BatchNorm2d(out_filter))
         module.add_module('FirstBlock_RELU6', nn.ReLU6(inplace=True))
         return out_filter 
@@ -95,18 +101,22 @@ class MobileNetv2(nn.Module):
                 stride = s if block == 0 else 1
                 if self.debug:
                     print(f'[{n}] with Id {Id}==> block {block} : [in]: {prev_filter}, [out]: {c}')
-                self.model.append(InvertedBlock(input_size=prev_filter, output_size= c, stride= stride, factor= t, Id= Id))
+                self.model.append(InvertedBlock(input_size=prev_filter, 
+                                                output_size= c, 
+                                                stride= stride, 
+                                                factor= t, 
+                                                Id= Id))
                 self.blocks.append('InvertedBlock_' + str(Id))
                 Id+=1
                 prev_filter = c
 
     def forward(self, x):
         for block_name, module in zip(self.blocks, self.model):
-            if self.debug:
-                print(f'We reach {block_name}')
-                print(f'input size [{x.size()}]')
+            #if self.debug:
+            #    print(f'We reach {block_name}')
+            #    print(f'input size [{x.size()}]')
             x = module(x)
-            if self.debug:
-                print(f'output size [{x.size()}]')
+            #if self.debug:
+            #    print(f'output size [{x.size()}]')
             
         return x    
