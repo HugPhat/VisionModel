@@ -21,7 +21,11 @@ class DenseLayer(nn.Module):
         return module
         
     def forward(self, x):
-        return self.module(x)
+        if isinstance(x, torch.Tensor):
+            inp = [x]
+        else:
+            inp = x
+        return self.module(inp)
 
 class DenseBlock(nn.Module):
     def __init__(self, n_input, n_output, n_layer, growth_rate, debug = False):
@@ -47,14 +51,13 @@ class DenseBlock(nn.Module):
             #    print(f'out-> {n_out}')
 
     def forward(self, x):
-        prev = x
+        feature = [x]
+        
         for i, layer in enumerate(self.module):
-            x = layer(x)
-            x = torch.cat([prev, x], dim=1)
-            if self.debug: 
-                print(x.size())
-            prev = x
-        return x
+            x = layer(feature)
+            feature.append(x)
+            
+        return torch.cat(feature, dim=1)
 
         
 class TransitionDown(nn.Module):
@@ -99,3 +102,28 @@ class TransitionUp(nn.Sequential):
         self.add_module('conv', nn.Conv2d(n_inp, n_out,
                                           kernel_size=1, stride=1, bias=False))
         self.add_module('pool', nn.AvgPool2d(kernel_size=2, stride=2))
+
+
+class DownStep(nn.Module):
+    def __init__(self, num, inp, out, growth_rate):
+        super(DownStep, self).__init__()
+        self.dense_block = DenseBlock(inp, out, num, growth_rate)
+        self.down = TransitionDown(out, out)
+
+    def forward(self, x):
+        x1 = self.dense_block(x)
+        x2 = self.down(x1)
+        return x1, x2
+        
+
+class UpStep(nn.Module):
+    def __init__(self, num, inp, out, growth_rate):
+        super(UpStep, self).__init__()
+        self.up = TransitionUp(inp, inp)
+        self.dense_block = DenseBlock(inp, out, num, growth_rate)
+        
+    def forward(self, x, skip_connect):
+        x = self.up(x)
+        x = torch.cat([x, skip_connect], dim=1)
+        x = self.dense_block(x)
+        return x
