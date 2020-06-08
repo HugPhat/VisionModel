@@ -12,4 +12,5 @@ dummy_input = torch.ones((1, 3, 224, 224))
 
 x = model(dummy_input)
 print(x.size())
-#print(model)
+model_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+print(model_params)
