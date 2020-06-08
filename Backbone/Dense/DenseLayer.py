@@ -21,11 +21,11 @@ class DenseLayer(nn.Module):
         return module
         
     def forward(self, x):
-        if isinstance(x, torch.Tensor):
-            inp = [x]
-        else:
-            inp = x
-        return self.module(inp)
+        #if isinstance(x, torch.Tensor):
+        #    inp = [x]
+        #else:
+        #    inp = x
+        return self.module(x)
 
 class DenseBlock(nn.Module):
     def __init__(self, n_input, n_output, n_layer, growth_rate, debug = False):
@@ -51,13 +51,13 @@ class DenseBlock(nn.Module):
             #    print(f'out-> {n_out}')
 
     def forward(self, x):
-        feature = [x]
+        feature = x
         
         for i, layer in enumerate(self.module):
             x = layer(feature)
-            feature.append(x)
+            feature = torch.cat([feature, x], 1)
             
-        return torch.cat(feature, dim=1)
+        return feature
 
         
 class TransitionDown(nn.Module):
