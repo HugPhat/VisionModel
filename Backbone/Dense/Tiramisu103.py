@@ -38,20 +38,27 @@ class Tiramisu103(nn.Module):
             inp = out
         # mid
         out = inp + self.growth_rate * self.mid
-        dense = DenseBlock(self.mid, inp, out, self.growth_rate)
+        dense = DenseBlock(inp, out, self.mid, self.growth_rate, for_upsample= True)
+        inp = out
         self.model.append(dense)
         # up
         uppath = self.flow[::-1]
         lout = lout[::-1]
+        print(uppath)
         for i, item in enumerate(uppath):
             if item == max(uppath):
+                inp_up = self.growth_rate*(self.mid)
                 out = out + self.growth_rate*item
-                print(f'=>out {out}')
+
             else:
+                inp_up = self.growth_rate*(uppath[i-1])
                 out = lout[i] + self.growth_rate*(uppath[i] + uppath[i-1]) 
-                print(f'uu=>out {out}')
+            
+            print(f'uu=>inp_up {inp_up}')
+            print(f'uu=>out {out}')
             self.model.append(UpStep(
                                     num=item,
+                                    inp_up=inp_up,
                                     inp=inp,
                                     out=out,
                                     growth_rate=self.growth_rate))
@@ -63,18 +70,19 @@ class Tiramisu103(nn.Module):
 
         x = self.model[0](x)
         i = 0
-        for it, step in enumerate(self.model[1: len(self.flow)]):
+        for it, step in enumerate(self.model[1: len(self.flow)+1]):
             i = it
             tmp, x = step(x)
             print(f'i=>> {i}')
-            print(step)
+            print(x.size())
             skip_connection.append(tmp)
-        print(self.model[i+1])
-        x = self.model[i+1](x)
+        x, for_upsample = self.model[i+2](x)
+        #print(self.model[i+2])
         neg_i = -1
-        for it, step in enumerate(self.model[i+2:]):
-            #print(x.size())
-            x = step(x, skip_connection[neg_i])
+        for it, step in enumerate(self.model[i+3:]):
+
+            #print(step)
+            for_upsample = step(x, for_upsample, skip_connection[neg_i])
             neg_i -= 1
         
         return x

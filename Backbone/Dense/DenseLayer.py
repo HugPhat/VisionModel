@@ -28,9 +28,10 @@ class DenseLayer(nn.Module):
         return self.module(x)
 
 class DenseBlock(nn.Module):
-    def __init__(self, n_input, n_output, n_layer, growth_rate, debug = False):
+    def __init__(self, n_input, n_output, n_layer, growth_rate, debug = False, for_upsample = False):
         super(DenseBlock, self).__init__()
         self.debug = debug
+        self.for_upsample = for_upsample
         self.n_input, self.n_output, self.growth_rate = n_input, n_output, growth_rate
         self.n_layer = n_layer
         self.module = nn.ModuleList()
@@ -52,13 +53,17 @@ class DenseBlock(nn.Module):
 
     def forward(self, x):
         feature = x
-        
+        tmp = []
         for i, layer in enumerate(self.module):
             x = layer(feature)
+            if  self.for_upsample:
+                tmp.append(x)
             feature = torch.cat([feature, x], 1)
-            
-        return feature
-
+        
+        if  self.for_upsample:    
+            return  torch.cat(tmp, 1)
+        else:
+            return feature
         
 class TransitionDown(nn.Module):
     def __init__(self, n_input, n_out):
@@ -71,7 +76,7 @@ class TransitionDown(nn.Module):
                                 out_channels=n_out,
                                 kernel_size=(1,1),
                                 stride=1,
-                                padding= (1-1)//2            
+                                padding= 0            
                                 ))
         self.module.add_module('Drop', nn.Dropout2d(0.2))
         self.module.add_module('MaxPool', nn.MaxPool2d(kernel_size=(2,2)))
@@ -94,20 +99,27 @@ class TransitionUp(nn.Module):
         return x
 '''
 
-class TransitionUp(nn.Sequential):
+class TransitionUp(nn.Module):
     def __init__(self, n_inp, n_out):
         super(TransitionUp, self).__init__()
-        self.add_module('norm', nn.BatchNorm2d(n_inp))
-        self.add_module('relu', nn.ReLU(inplace=True))
-        self.add_module('conv', nn.Conv2d(n_inp, n_out,
-                                          kernel_size=1, stride=1, bias=False))
-        self.add_module('pool', nn.AvgPool2d(kernel_size=2, stride=2))
-
+        self.bn =  nn.BatchNorm2d(n_inp)
+        self.relu =  nn.ReLU(inplace=True)
+        self.conv =  nn.ConvTranspose2d(n_inp, n_out,
+                                          kernel_size=3, stride=2, 
+                                          padding=1,
+                                          bias=True,
+                                          )
+        #self.add_module('pool', nn.AvgPool2d(kernel_size=2, stride=2))
+    def forward(self, x, output_size):
+        x = self.bn(x)
+        x = self.relu(x)
+        x = self.conv(x, output_size=output_size)
+        return x
 
 class DownStep(nn.Module):
-    def __init__(self, num, inp, out, growth_rate):
+    def __init__(self, num, inp, out, growth_rate, ):
         super(DownStep, self).__init__()
-        self.dense_block = DenseBlock(inp, out, num, growth_rate)
+        self.dense_block = DenseBlock(inp, out, num, growth_rate, for_upsample=False)
         self.down = TransitionDown(out, out)
 
     def forward(self, x):
@@ -115,15 +127,20 @@ class DownStep(nn.Module):
         x2 = self.down(x1)
         return x1, x2
         
-
 class UpStep(nn.Module):
-    def __init__(self, num, inp, out, growth_rate):
+    def __init__(self, num, inp_up, inp, out, growth_rate):
         super(UpStep, self).__init__()
-        self.up = TransitionUp(inp, inp)
-        self.dense_block = DenseBlock(inp, out, num, growth_rate)
+        self.up = TransitionUp(inp_up, inp_up)
+        self.dense_block = DenseBlock(inp, out, num, growth_rate, for_upsample=True)
         
-    def forward(self, x, skip_connect):
-        x = self.up(x)
-        x = torch.cat([x, skip_connect], dim=1)
-        x = self.dense_block(x)
-        return x
+    def forward(self, x, for_upsample, skip_connect):
+        
+        print(f'upping for_upsample => {for_upsample.size()}')
+        print(f'skip_connect => {skip_connect.size()}')
+        b,c,h,w = list(for_upsample.size())
+        for_upsample = self.up(for_upsample, output_size = [b,c,h*2,w*2])#, output_size = [b,c,h*2,w*2]
+        print(f'upped for_upsample => {for_upsample.size()}')
+        t = torch.cat([for_upsample, skip_connect], dim=1)
+        print(f'cat => {t.size()}')
+        forupsample= self.dense_block(t)
+        return forupsample
