@@ -61,7 +61,7 @@ class DenseBlock(nn.Module):
             feature = torch.cat([feature, x], 1)
         
         if  self.for_upsample:    
-            return  torch.cat(tmp, 1)
+            return  feature#torch.cat(tmp, 1)
         else:
             return feature
         
@@ -128,10 +128,10 @@ class DownStep(nn.Module):
         return x1, x2
         
 class UpStep(nn.Module):
-    def __init__(self, num, inp_up, inp, out, growth_rate):
+    def __init__(self, num, inp_up, out_up, out, growth_rate):
         super(UpStep, self).__init__()
-        self.up = TransitionUp(inp_up, inp_up)
-        self.dense_block = DenseBlock(inp, out, num, growth_rate, for_upsample=True)
+        self.up = TransitionUp(inp_up, out_up)
+        self.dense_block = DenseBlock(inp_up, out, num, growth_rate, for_upsample=True)
         
     def forward(self, x, for_upsample, skip_connect):
         

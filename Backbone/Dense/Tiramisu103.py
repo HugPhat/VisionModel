@@ -39,30 +39,31 @@ class Tiramisu103(nn.Module):
         # mid
         out = inp + self.growth_rate * self.mid
         dense = DenseBlock(inp, out, self.mid, self.growth_rate, for_upsample= True)
-        inp = out
+        #inp = out
         self.model.append(dense)
         # up
         uppath = self.flow[::-1]
         lout = lout[::-1]
-        print(uppath)
+        inp_up = out
         for i, item in enumerate(uppath):
             if item == max(uppath):
-                inp_up = self.growth_rate*(self.mid)
+                out_up = self.growth_rate*(self.mid)
                 out = out + self.growth_rate*item
-
             else:
-                inp_up = self.growth_rate*(uppath[i-1])
+                out_up = self.growth_rate*(uppath[i-1])
                 out = lout[i] + self.growth_rate*(uppath[i] + uppath[i-1]) 
             
             print(f'uu=>inp_up {inp_up}')
+            print(f'uu=>out_up {out_up}')
             print(f'uu=>out {out}')
             self.model.append(UpStep(
                                     num=item,
                                     inp_up=inp_up,
-                                    inp=inp,
+                                    out_up=out_up,
+                                    #inp=inp,
                                     out=out,
                                     growth_rate=self.growth_rate))
-            inp = out
+            inp_up = out
 
     def forward(self, x):
         
@@ -76,12 +77,12 @@ class Tiramisu103(nn.Module):
             print(f'i=>> {i}')
             print(x.size())
             skip_connection.append(tmp)
-        x, for_upsample = self.model[i+2](x)
+        for_upsample  = self.model[i+2](x)
         #print(self.model[i+2])
+        print(for_upsample.size())
         neg_i = -1
         for it, step in enumerate(self.model[i+3:]):
 
-            #print(step)
             for_upsample = step(x, for_upsample, skip_connection[neg_i])
             neg_i -= 1
         
