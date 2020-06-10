@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-import torch.functional as F 
+import torch.nn.functional as F 
 from collections import OrderedDict
 
 class InvertedBlock(nn.Module):
@@ -12,6 +12,7 @@ class InvertedBlock(nn.Module):
         self.factor = factor
         self.Id  = Id
         self.add = False
+        
         
         self.module = self.create_block()
         
@@ -59,10 +60,12 @@ class InvertedBlock(nn.Module):
             return self.module(x)
         
 class MobileNetv2(nn.Module):
-    def __init__(self, input_size = 224, debug= False):
+    def __init__(self, input_size = 224, n_classes = 10, debug= False):
         super(MobileNetv2, self).__init__()
         self.input_size = input_size
         self.debug = debug
+        self.last_channel = 1280
+        self.n_classes = n_classes
         self.model_hyperparams = [
             # t, c, n, s
             [1, 16, 1, 1],
@@ -85,8 +88,15 @@ class MobileNetv2(nn.Module):
                                                 bias=False))
         module.add_module('FirstBlock_BN', nn.BatchNorm2d(out_filter))
         module.add_module('FirstBlock_RELU6', nn.ReLU6(inplace=True))
-        return out_filter 
-
+        return out_filter
+     
+    def conv_1x1_bn(self, inp, oup):
+        return nn.Sequential(
+        nn.Conv2d(inp, oup, 1, 1, 0, bias=False),
+        nn.BatchNorm2d(oup),
+        nn.ReLU6(inplace=True))
+        
+        
     def constructNet(self):
         fmodule = nn.Sequential()
         self.model = nn.ModuleList()
@@ -109,7 +119,11 @@ class MobileNetv2(nn.Module):
                 self.blocks.append('InvertedBlock_' + str(Id))
                 Id+=1
                 prev_filter = c
-
+        self.blocks.append('last_conv_1_1')        
+        self.model.append(self.conv_1x1_bn(prev_filter, self.last_channel))
+        
+        self.classifier=  nn.Linear(self.last_channel, self.n_classes)
+    
     def forward(self, x):
         for block_name, module in zip(self.blocks, self.model):
             #if self.debug:
@@ -118,5 +132,10 @@ class MobileNetv2(nn.Module):
             x = module(x)
             #if self.debug:
             #    print(f'output size [{x.size()}]')
-            
+        
+        x = F.avg_pool2d(x, 7)
+        x = x.mean(3).mean(2)
+        
+        x = self.classifier(x)
+        print(x.size())
         return x    

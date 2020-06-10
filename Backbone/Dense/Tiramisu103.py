@@ -59,9 +59,13 @@ class Tiramisu103(nn.Module):
               inp=inp,
               out=out,
               growth_rate=self.growth_rate))
-        self.LastConv = nn.Conv2d(
-            in_channels=inp + out, out_channels=self.num_classes, kernel_size=1, stride=1, padding=0)
-        #self.Softmax = nn.Softmax2d
+        self.LastLayer = nn.Sequential()
+        self.LastLayer.add_module('lastconv', nn.Conv2d( \
+                                in_channels=inp + out, 
+                                out_channels=self.num_classes, 
+                                kernel_size=1, stride=1, padding=0))
+        self.LastLayer.add_module('softmax', nn.Softmax(dim=1))    
+        
 
     def forward(self, x):
         skip_connection = []
@@ -76,5 +80,8 @@ class Tiramisu103(nn.Module):
         for it, step in enumerate(self.model[i+3:]):
             x, upsamp = step(upsamp, skip_connection[neg_i])
             neg_i -= 1
-        x = self.LastConv(x)
+        x = self.LastLayer[0](x) # Conv 1x1
+        
+        
+        
         return x
