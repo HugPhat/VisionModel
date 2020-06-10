@@ -80,8 +80,12 @@ class Tiramisu103(nn.Module):
         for it, step in enumerate(self.model[i+3:]):
             x, upsamp = step(upsamp, skip_connection[neg_i])
             neg_i -= 1
-        x = self.LastLayer[0](x) # Conv 1x1
         
-        
+        x = self.LastLayer[0](x)# Conv 1x1
+        b,c,w,h = x.size()
+        x = x.permute(0, 2, 3, 1)
+        x = x.resize(b*h*w, c)
+        x = F.softmax(x, 0)
+        x = x.resize(b,c,w,h)
         
         return x
