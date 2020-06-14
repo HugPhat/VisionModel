@@ -59,12 +59,12 @@ class Tiramisu103(nn.Module):
               inp=inp,
               out=out,
               growth_rate=self.growth_rate))
-        self.LastLayer = nn.Sequential()
-        self.LastLayer.add_module('lastconv', nn.Conv2d( \
+        #self.LastLayer = nn.Sequential()
+        self.LastLayer = nn.Conv2d( \
                                 in_channels=inp + out, 
                                 out_channels=self.num_classes, 
-                                kernel_size=1, stride=1, padding=0))
-        self.LastLayer.add_module('softmax', nn.Softmax(dim=1))    
+                                kernel_size=1, stride=1, padding=0)
+        #self.LastLayer.add_module('softmax', nn.Softmax(dim=1))    
         
 
     def forward(self, x):
@@ -81,11 +81,11 @@ class Tiramisu103(nn.Module):
             x, upsamp = step(upsamp, skip_connection[neg_i])
             neg_i -= 1
         
-        x = self.LastLayer[0](x)# Conv 1x1
-        b,c,w,h = x.size()
-        x = x.permute(0, 2, 3, 1)
-        x = x.resize(b*h*w, c)
-        x = F.softmax(x, 0)
-        x = x.resize(b,c,w,h)
+        x = self.LastLayer(x)# Conv 1x1
+        #b,c,w,h = x.size()
+        #x = x.permute(0, 2, 3, 1)
+        #x = x.resize(b*h*w, c)
+        #x = F.softmax(x, 0)
+        #x = x.resize(b,c,w,h)
         
         return x
