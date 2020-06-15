@@ -1,5 +1,6 @@
 import numpy as np 
 import os
+import sys
 from PIL import Image
 
 import torch
@@ -7,6 +8,8 @@ import torch.nn as nn
 import torchvision.transforms as transforms
 from torch.utils.data import Dataset
 from torchvision.datasets import VOCDetection
+
+sys.path.insert(0, os.path.dirname(__file__))
 
 from SegUtils import *
 
@@ -16,7 +19,9 @@ class VOCseg(Dataset):
                     mask_src,
                     num_class = 21, 
                     class_name = None,
-                    img_size = (224, 224)
+                    img_size = (224, 224),
+                    mode = 'train',
+                    split = 0.8
                 ):
         '''
         Pascal Voc Format for class segmentation
@@ -47,22 +52,32 @@ class VOCseg(Dataset):
                                'tvmonitor', 
                                'void']
         self.labels = self.default_labels
-        self.mask_color = self.color_map()[:len(self.labels)+1]
+        self.mask_color = self.color_map()[:len(self.labels) -1]
         self.list_items = []
         
-        for each in os.listdir(jpeg_src):
+        for each in os.listdir(mask_src):
+            name = each.split('.')[0]
             t = each.split('.')[-1]
-            if t in ['jpg', 'JPG']:
-                self.list_items.append(t)
+            if t in ['png', 'png']:
+                self.list_items.append(name)
                 
-        #self.image_src = [os.path.join(jpeg_src, each) for each in list_jpeg]
-        #self.image_mask = [os.jpeg_src]
+        #if mode == 'val':
+        #    tsplit = len()
+        
         self.image_src = jpeg_src
         self.mask_src = mask_src
         self.img_size = img_size
-        #self.labels.pop(0)
+
         self.labels.pop(-1)
-        self.mask_color.pop(-1)
+        #self.mask_color.pop(-1)
+        
+        self.preprocess = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], 
+                             std=[0.229, 0.224, 0.225]),
+            ])
+        
+        
     def color_map(self, N=256, normalized=False):
         def bitget(byteval, idx):
             return ((byteval & (1 << idx)) != 0)
@@ -82,13 +97,15 @@ class VOCseg(Dataset):
         cmap = cmap/255 if normalized else cmap
         return cmap
     
+    
     def create_mask(self, mask):
         #lmask = np.all(mask == self.mask_color[0], axis=-1)
         lmask = []
         for each in self.mask_color:
             tmask = np.all(mask == each, axis=-1)
             lmask.append(tmask)
-        return lmask
+        return np.array(lmask)
+    
     
     def __getitem__(self, index):
         item = self.list_items[index]
@@ -109,8 +126,9 @@ class VOCseg(Dataset):
             img = SegSaturation(img)
         if rand():
             x = random.random()
-            img = SegScale(img, x)
-            mask = SegScale(mask, x)
+            if x > 0 and x < 1:
+                img = SegScale(img, x)
+                mask = SegScale(mask, x)
         if rand():
             img = SegFlip(img, 'v')
             mask = SegFlip(mask, 'v')
@@ -118,8 +136,16 @@ class VOCseg(Dataset):
             img = SegFlip(img, 'h')
             mask = SegFlip(mask, 'h')
         
+        img = cv2.resize(img, self.img_size)
+        mask = cv2.resize(mask, self.img_size)
+        mask = self.create_mask(mask)
         
+        img = self.preprocess(img)
+        mask = torch.from_numpy(mask)
+        #img = img.unsqueeze(0)
+        #mask = mask.unsqueeze(0)
         #mask =  
-        return 
+        return img, mask
 
-    
+    def __len__(self):
+        return len(self.list_items)
