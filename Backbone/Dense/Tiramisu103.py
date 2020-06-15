@@ -7,14 +7,29 @@ from DenseLayer import *
 
 
 class Tiramisu103(nn.Module):
-    def __init__(self, growth_rate=16, flow=[4, 5, 7, 10, 12, 15], num_classes=10):
+    def __init__(self, 
+                    growth_rate=16, 
+                    flow=[4, 5, 7, 10, 12, 15],
+                    mid = 15,
+                    num_classes=10,
+                    init_weight = False
+                    ):
         super(Tiramisu103, self).__init__()
         self.growth_rate = growth_rate
         self.model = nn.ModuleList()
         self.flow = flow
-        self.mid = 15
+        self.mid = mid
         self.num_classes = num_classes
         self.Create()
+        if init_weight:
+            for m in self.model():
+                if isinstance(m, nn.Conv2d):
+                    nn.init.kaiming_normal_(m.weight)
+                elif isinstance(m, nn.BatchNorm2d):
+                    nn.init.constant_(m.weight, 1)
+                    nn.init.constant_(m.bias, 0)
+                elif isinstance(m, nn.Linear):
+                    nn.init.constant_(m.bias, 0)
 
     def FirstBlock(self):
         x = nn.Conv2d(in_channels=3, out_channels=48,

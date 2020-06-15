@@ -10,4 +10,3 @@ Darknet 19, 53, Yolov3,
  + ResNet50
  + EfficientNet
  + Yolov4
-
