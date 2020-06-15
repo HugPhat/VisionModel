@@ -3,6 +3,8 @@ import os
 import sys
 from PIL import Image
 
+import matplotlib.pyplot as plt
+
 import torch
 import torch.nn as nn 
 import torchvision.transforms as transforms
@@ -58,7 +60,7 @@ class VOCseg(Dataset):
         for each in os.listdir(mask_src):
             name = each.split('.')[0]
             t = each.split('.')[-1]
-            if t in ['png', 'png']:
+            if t in ['png', 'PNG']:
                 self.list_items.append(name)
                 
         #if mode == 'val':
@@ -102,8 +104,12 @@ class VOCseg(Dataset):
         #lmask = np.all(mask == self.mask_color[0], axis=-1)
         lmask = []
         for each in self.mask_color:
-            tmask = np.all(mask == each, axis=-1)
+            tmask = np.all(mask == each, axis=-1).astype('float32')
             lmask.append(tmask)
+            #print(each)
+            #plt.imshow(tmask)
+            #plt.show()
+            #print(tmask)
         return np.array(lmask)
     
     
@@ -126,7 +132,7 @@ class VOCseg(Dataset):
             img = SegSaturation(img)
         if rand():
             x = random.random()
-            if x > 0 and x < 1:
+            if x > 0.8 and x < 1.2:
                 img = SegScale(img, x)
                 mask = SegScale(mask, x)
         if rand():
@@ -139,6 +145,8 @@ class VOCseg(Dataset):
         img = cv2.resize(img, self.img_size)
         mask = cv2.resize(mask, self.img_size)
         mask = self.create_mask(mask)
+        plt.imshow(img)
+        plt.show()
         
         img = self.preprocess(img)
         mask = torch.from_numpy(mask)

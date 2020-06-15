@@ -60,6 +60,6 @@ def SegScale(img, scale):
     return img
 
 def rand():
-    if random.random() > 0.5:
+    if random.random() > 0.6:
         return True
     return False
