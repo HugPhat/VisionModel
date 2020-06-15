@@ -22,7 +22,7 @@ class Tiramisu103(nn.Module):
         self.num_classes = num_classes
         self.Create()
         if init_weight:
-            for m in self.model():
+            for m in self.model:
                 if isinstance(m, nn.Conv2d):
                     nn.init.kaiming_normal_(m.weight)
                 elif isinstance(m, nn.BatchNorm2d):
