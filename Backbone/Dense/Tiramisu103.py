@@ -11,7 +11,7 @@ class Tiramisu103(nn.Module):
                     growth_rate=16, 
                     flow=[4, 5, 7, 10, 12, 15],
                     mid = 15,
-                    num_classes=10,
+                    num_classes=21,
                     init_weight = False
                     ):
         super(Tiramisu103, self).__init__()
