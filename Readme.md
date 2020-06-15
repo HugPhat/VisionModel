@@ -6,8 +6,8 @@ Recode models I've used
 # Next 
 Darknet 19, 53, Yolov3, 
 # To do
-Yolo detection layer
-ResNet50
-EfficientNet
-Yolov4
+ + Yolo detection layer
+ + ResNet50
+ + EfficientNet
+ + Yolov4
 
