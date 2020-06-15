@@ -11,9 +11,10 @@ import torchvision.transforms as transforms
 from torch.utils.data import Dataset
 from torchvision.datasets import VOCDetection
 
-sys.path.insert(0, os.path.dirname(__file__))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__),  '..'))
+sys.path.append(os.path.dirname(__file__))
 
-from SegUtils import *
+from Utils import *
 
 class VOCseg(Dataset):
     def __init__(self, 
@@ -23,7 +24,7 @@ class VOCseg(Dataset):
                     class_name = None,
                     img_size = (224, 224),
                     mode = 'train',
-                    split = 0.8
+                    ratio = 0.8
                 ):
         '''
         Pascal Voc Format for class segmentation
@@ -61,11 +62,18 @@ class VOCseg(Dataset):
             name = each.split('.')[0]
             t = each.split('.')[-1]
             if t in ['png', 'PNG']:
-                self.list_items.append(name)
-                
-        #if mode == 'val':
-        #    tsplit = len()
-        
+                self.list_items.append(name) 
+        if ratio > 1 or ratio < 0:
+            raise ValueError('ratio must in [0,1]')
+        if mode == 'val':
+            tsplit = int(len(self.list_items)*(1 - ratio))
+            self.list_items = self.list_items[tsplit:]
+        elif mode == 'train':
+            tsplit = int(len(self.list_items)*ratio)
+            self.list_items = self.list_items[:tsplit]
+        else:
+            raise ValueError('mode = val or train')  
+
         self.image_src = jpeg_src
         self.mask_src = mask_src
         self.img_size = img_size
@@ -103,12 +111,15 @@ class VOCseg(Dataset):
     def create_mask(self, mask):
         #lmask = np.all(mask == self.mask_color[0], axis=-1)
         lmask = []
+        #plt.imshow(mask)
+        #plt.show()
         for each in self.mask_color:
             tmask = np.all(mask == each, axis=-1).astype('float32')
             lmask.append(tmask)
             #print(each)
-            #plt.imshow(tmask)
-            #plt.show()
+            #if np.sum(tmask) > 1:
+            #    plt.imshow(tmask)
+            #    plt.show()
             #print(tmask)
         return np.array(lmask)
     
@@ -123,30 +134,33 @@ class VOCseg(Dataset):
         mask = np.array(mask)
         
         if rand():
-            img = SegBlur(img)
+            img = Blur(img)
         if rand():
-            img = SegBrightness(img)
+            img = Brightness(img)
         if rand():
-            img = SegHue(img)
+            img = Hue(img)
         if rand():
-            img = SegSaturation(img)
+            img = Saturation(img)
         if rand():
             x = random.random()
             if x > 0.8 and x < 1.2:
-                img = SegScale(img, x)
-                mask = SegScale(mask, x)
+                img = Scale(img, x)
+                mask = Scale(mask, x)
         if rand():
-            img = SegFlip(img, 'v')
-            mask = SegFlip(mask, 'v')
+            img = Flip(img, 'v')
+            mask = Flip(mask, 'v')
         if rand():
-            img = SegFlip(img, 'h')
-            mask = SegFlip(mask, 'h')
-        
+            img = Flip(img, 'h')
+            mask = Flip(mask, 'h')
+        if rand():
+            img = Gray(img)
+            
         img = cv2.resize(img, self.img_size)
         mask = cv2.resize(mask, self.img_size)
+        #plt.imshow(mask)
+        #plt.show()
+
         mask = self.create_mask(mask)
-        plt.imshow(img)
-        plt.show()
         
         img = self.preprocess(img)
         mask = torch.from_numpy(mask)
