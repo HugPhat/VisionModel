@@ -4,6 +4,7 @@ import sys
 from PIL import Image
 
 import matplotlib.pyplot as plt
+import random
 
 import torch
 import torch.nn as nn 
@@ -134,6 +135,10 @@ class VOCseg(Dataset):
         mask = np.array(mask)
         
         if rand():
+            angle = random.randint(-40, 40)
+            img = Rotate(img, angle)
+            mask = Rotate(mask, angle)
+        if rand():
             img = Blur(img)
         if rand():
             img = Brightness(img)
@@ -141,24 +146,24 @@ class VOCseg(Dataset):
             img = Hue(img)
         if rand():
             img = Saturation(img)
-        if rand():
+        if rand(0.7):
             x = random.random()
             if x > 0.8 and x < 1.2:
                 img = Scale(img, x)
                 mask = Scale(mask, x)
-        if rand():
+        if rand(0.9):
             img = Flip(img, 'v')
             mask = Flip(mask, 'v')
-        if rand():
+        if rand(0.7):
             img = Flip(img, 'h')
             mask = Flip(mask, 'h')
-        if rand():
+        if rand(0.8):
             img = Gray(img)
             
         img = cv2.resize(img, self.img_size)
         mask = cv2.resize(mask, self.img_size)
-        #plt.imshow(mask)
-        #plt.show()
+        plt.imshow(img)
+        plt.show()
 
         mask = self.create_mask(mask)
         
