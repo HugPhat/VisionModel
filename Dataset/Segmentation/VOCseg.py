@@ -8,6 +8,8 @@ import torchvision.transforms as transforms
 from torch.utils.data import Dataset
 from torchvision.datasets import VOCDetection
 
+from SegUtils import *
+
 class VOCseg(Dataset):
     def __init__(self, 
                     jpeg_src,
@@ -96,6 +98,26 @@ class VOCseg(Dataset):
         mask = Image.open(mask).convert('RGB')
         img = np.array(img)
         mask = np.array(mask)
+        
+        if rand():
+            img = SegBlur(img)
+        if rand():
+            img = SegBrightness(img)
+        if rand():
+            img = SegHue(img)
+        if rand():
+            img = SegSaturation(img)
+        if rand():
+            x = random.random()
+            img = SegScale(img, x)
+            mask = SegScale(mask, x)
+        if rand():
+            img = SegFlip(img, 'v')
+            mask = SegFlip(mask, 'v')
+        if rand():
+            img = SegFlip(img, 'h')
+            mask = SegFlip(mask, 'h')
+        
         
         #mask =  
         return 

@@ -58,3 +58,8 @@ def SegScale(img, scale):
     img = cv2.resize(img, dsize=(
         int(w * scale), int(h*scale)), interpolation=cv2.INTER_LINEAR)
     return img
+
+def rand():
+    if random.random() > 0.5:
+        return True
+    return False
