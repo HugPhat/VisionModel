@@ -126,8 +126,8 @@ class VOCseg(Dataset):
             #    plt.imshow(tmask)
             #    plt.show()
             #print(tmask)
-        #return np.array(lmask)
-        return np.array(indice)
+        return np.array(lmask)
+        #return np.array(indice)
     
     
     def __getitem__(self, index):
