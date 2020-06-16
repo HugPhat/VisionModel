@@ -74,11 +74,12 @@ class Tiramisu103(nn.Module):
               inp=inp,
               out=out,
               growth_rate=self.growth_rate))
-        #self.LastLayer = nn.Sequential()
-        self.LastLayer = nn.Conv2d( \
+        self.LastLayer = nn.Sequential()
+        self.LastLayer.add_module('point_wise',nn.Conv2d( \
                                 in_channels=inp + out, 
                                 out_channels=self.num_classes, 
-                                kernel_size=1, stride=1, padding=0)
+                                kernel_size=1, stride=1, padding=0))
+        #self.LastLayer.add_module('pw_relu', nn.ReLU(inplace=True))
         #self.LastLayer.add_module('softmax', nn.Softmax(dim=1))    
         
 

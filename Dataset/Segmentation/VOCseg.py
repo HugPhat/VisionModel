@@ -81,12 +81,13 @@ class VOCseg(Dataset):
 
         self.labels.pop(-1)
         #self.mask_color.pop(-1)
-        
+        #print(self.labels)
         self.preprocess = transforms.Compose([
         transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], 
-                             std=[0.229, 0.224, 0.225]),
-            ])
+        transforms.Normalize(
+                            mean=[0.485, 0.456, 0.406], 
+                            std=[0.229, 0.224, 0.225]),
+                            ])
         
         
     def color_map(self, N=256, normalized=False):
@@ -112,10 +113,12 @@ class VOCseg(Dataset):
     def create_mask(self, mask):
         #lmask = np.all(mask == self.mask_color[0], axis=-1)
         lmask = []
+        indice = 0
         #plt.imshow(mask)
         #plt.show()
-        for each in self.mask_color:
-            tmask = np.all(mask == each, axis=-1).astype('float32')
+        for i, each in enumerate(self.mask_color):
+            tmask = np.all(mask == each, axis=-1)
+            indice += tmask*i
             lmask.append(tmask)
             #print(np.max(tmask))
             #print(each)
@@ -123,7 +126,8 @@ class VOCseg(Dataset):
             #    plt.imshow(tmask)
             #    plt.show()
             #print(tmask)
-        return np.array(lmask)
+        #return np.array(lmask)
+        return np.array(indice)
     
     
     def __getitem__(self, index):
