@@ -117,7 +117,7 @@ class VOCseg(Dataset):
         for each in self.mask_color:
             tmask = np.all(mask == each, axis=-1).astype('float32')
             lmask.append(tmask)
-            print(np.max(tmask))
+            #print(np.max(tmask))
             #print(each)
             #if np.sum(tmask) > 1:
             #    plt.imshow(tmask)
@@ -163,8 +163,8 @@ class VOCseg(Dataset):
             
         img = cv2.resize(img, self.img_size)
         mask = cv2.resize(mask, self.img_size)
-        plt.imshow(img)
-        plt.show()
+        #plt.imshow(img)
+        #plt.show()
 
         mask = self.create_mask(mask)
         
