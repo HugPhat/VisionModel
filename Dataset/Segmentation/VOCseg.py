@@ -56,8 +56,11 @@ class VOCseg(Dataset):
                                'tvmonitor', 
                                'void']
         self.labels = self.default_labels
-        self.mask_color = self.color_map()[:len(self.labels) -1]
+        self.mask_color = self.color_map()[1:len(self.labels) -1]
         self.list_items = []
+        self.labels.pop(-1)
+        #self.labels.pop(0)
+        #self.mask_color.pop(-1)
         
         for each in os.listdir(mask_src):
             name = each.split('.')[0]
@@ -79,8 +82,7 @@ class VOCseg(Dataset):
         self.mask_src = mask_src
         self.img_size = img_size
 
-        self.labels.pop(-1)
-        #self.mask_color.pop(-1)
+        
         #print(self.labels)
         self.preprocess = transforms.Compose([
         transforms.ToTensor(),
