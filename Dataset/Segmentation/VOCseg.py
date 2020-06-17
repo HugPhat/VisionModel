@@ -141,17 +141,17 @@ class VOCseg(Dataset):
         img = np.array(img)
         mask = np.array(mask)
         
-        if rand():
-            angle = random.randint(-40, 40)
-            img = Rotate(img, angle)
-            mask = Rotate(mask, angle)
+        #if rand():
+        #    angle = random.randint(-40, 40)
+        #    img = Rotate(img, angle)
+        #    mask = Rotate(mask, angle)
         if rand():
             img = Blur(img)
-        if rand():
+        if rand(0.1):
             img = Brightness(img)
-        if rand():
-            img = Hue(img)
-        if rand():
+        #if rand():
+        #    img = Hue(img)
+        if rand(0.1):
             img = Saturation(img)
         if rand(0.7):
             x = random.random()
@@ -164,13 +164,17 @@ class VOCseg(Dataset):
         if rand(0.7):
             img = Flip(img, 'h')
             mask = Flip(mask, 'h')
+        if rand(0.7):    
+            ratio = random.random()
+            img = Crop(img, ratio)
+            mask = Crop(mask, ratio)
         if rand(0.8):
             img = Gray(img)
             
         img = cv2.resize(img, self.img_size)
         mask = cv2.resize(mask, self.img_size)
-        #plt.imshow(img)
-        #plt.show()
+        plt.imshow(img)
+        plt.show()
 
         mask = self.create_mask(mask)
         
