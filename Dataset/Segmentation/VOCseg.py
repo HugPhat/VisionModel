@@ -56,7 +56,9 @@ class VOCseg(Dataset):
                                'tvmonitor', 
                                'void']
         self.labels = self.default_labels
-        self.mask_color = self.color_map()[1:len(self.labels) -1]
+        self.mask_color = list(self.color_map()[:len(self.labels ) -1])
+        #self.mask_color.append(np.array([255.0, 255.0, 255.0]))
+        print(self.mask_color)
         self.list_items = []
         self.labels.pop(-1)
         #self.labels.pop(0)
@@ -128,8 +130,8 @@ class VOCseg(Dataset):
             #    plt.imshow(tmask)
             #    plt.show()
             #print(tmask)
-        return np.array(lmask)
-        #return np.array(indice)
+        #return np.array(lmask)
+        return np.array(indice)
     
     
     def __getitem__(self, index):
