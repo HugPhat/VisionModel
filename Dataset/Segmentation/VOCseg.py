@@ -58,7 +58,7 @@ class VOCseg(Dataset):
         self.labels = self.default_labels
         self.mask_color = list(self.color_map()[:len(self.labels ) -1])
         #self.mask_color.append(np.array([255.0, 255.0, 255.0]))
-        print(self.mask_color)
+        #print(self.mask_color)
         self.list_items = []
         self.labels.pop(-1)
         #self.labels.pop(0)
