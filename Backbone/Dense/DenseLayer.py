@@ -16,7 +16,8 @@ class DenseLayer(nn.Module):
                           n_input, n_output,
                           kernel_size=3,
                           padding=(3-1)//2,
-                          stride=1
+                          stride=1,
+                          bias=True
                           ))
         module.add_module('Drop', nn.Dropout2d(0.2))
         return module
@@ -75,7 +76,8 @@ class TransitionDown(nn.Module):
             out_channels=n_out,
             kernel_size=(1, 1),
             stride=1,
-            padding=0
+            padding=0,
+            bias=True
         ))
         self.module.add_module('Drop', nn.Dropout2d(0.2))
         self.module.add_module('MaxPool', nn.MaxPool2d(kernel_size=(2, 2)))
