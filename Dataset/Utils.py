@@ -94,3 +94,10 @@ def rand(v = 0.6):
     if random.random() > v:
         return True
     return False
+
+def CenterCrop(img, size):
+    h, w,_ = img.shape
+    xy1 = (w - size[0]) // 2
+    xy2 = (h - size[1]) // 2
+    return img[xy2:(xy2 + size[0]), xy1:(xy1 + size[1])]
+    

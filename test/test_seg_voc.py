@@ -45,12 +45,12 @@ def error(preds, targets):
 model = Tiramisu103(init_weight = True, num_classes=21)
 model.cuda()
 model = nn.DataParallel(model)
-#model_chẹkpoints = torch.load('model/tiramisu.pth', map_location="cuda")
+model_chẹkpoints = torch.load('model/tiramisu.pth', map_location="cuda")
 print('loading Model')
-#model.load_state_dict(model_chẹkpoints)
+model.load_state_dict(model_chẹkpoints)
 optimizer = torch.optim.RMSprop(model.parameters(), lr=1e-4, weight_decay=1e-4)
 loss = nn.CrossEntropyLoss()
-loss = nn.NLLLoss2d(weight=torch.Tensor(label_weight).cuda()).cuda()
+loss = nn.CrossEntropyLoss(weight=torch.Tensor(label_weight).cuda()).cuda()
 
 Tensor = torch.cuda.FloatTensor 
 LTensor = torch.cuda.LongTensor 
@@ -71,7 +71,7 @@ for it, (imgs, targets) in enumerate(train):
     print(f'error = {train_error}')
     print(f'acc = {acc}')
     print(f'loss ==> {loss_value.item()}')
-    f, axarr = plt.subplots(ncols=2 , figsize=(10, 5))
+    f, axarr = plt.subplots(ncols=3 , figsize=(15, 5))
     x = torch.argmax(preds, dim=1)[0]
     #_, idx = x.data.cpu().max(1)
     #idx = idx.view(b,h,w)
@@ -81,6 +81,7 @@ for it, (imgs, targets) in enumerate(train):
     print(torch.max(x))
     axarr[0].imshow(np.array(x.cpu().data))
     axarr[1].imshow(np.array(targets[0].cpu().data))
+    axarr[2].imshow(np.array(imgs[0].permute(1, 2, 0).cpu().data))
     plt.show()
     del x, train_error, acc
     '''

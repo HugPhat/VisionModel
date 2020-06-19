@@ -41,7 +41,7 @@ default_labels = [  'background',
 label_weight = []
 for each in default_labels[:-1]:
     if each == 'background':
-        label_weight.append(0.)
+        label_weight.append(0.5)
     else:
         label_weight.append(1.)
      
@@ -53,7 +53,8 @@ class VOCseg(Dataset):
                     class_name = None,
                     img_size = (224, 224),
                     mode = 'train',
-                    ratio = 0.8
+                    ratio = 0.8,
+                    center_crop = True
                 ):
         '''
         Pascal Voc Format for class segmentation
@@ -62,6 +63,7 @@ class VOCseg(Dataset):
         '''
         super(VOCseg, self).__init__()
         
+        self.center_crop = center_crop
         
         self.labels = default_labels
         self.mask_color = list(self.color_map()[:len(self.labels ) -1])
@@ -147,6 +149,9 @@ class VOCseg(Dataset):
         #    angle = random.randint(-40, 40)
         #    img = Rotate(img, angle)
         #    mask = Rotate(mask, angle)
+        if self.center_crop:
+            img = CenterCrop(img, self.img_size)
+            mask = CenterCrop(mask, self.img_size)
         if rand():
             img = Blur(img)
         if rand(0.1):
@@ -166,7 +171,7 @@ class VOCseg(Dataset):
         if rand(0.7):
             img = Flip(img, 'h')
             mask = Flip(mask, 'h')
-        if rand(0.7):    
+        if rand(0.95):    
             ratio = random.random()
             img = Crop(img, ratio)
             mask = Crop(mask, ratio)
@@ -177,7 +182,6 @@ class VOCseg(Dataset):
         mask = cv2.resize(mask, self.img_size)
         
         mask = self.create_mask(mask)
-        
         img = self.preprocess(img)
         mask = torch.from_numpy(mask)
  
