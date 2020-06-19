@@ -45,9 +45,9 @@ def error(preds, targets):
 model = Tiramisu103(init_weight = True, num_classes=21)
 model.cuda()
 model = nn.DataParallel(model)
-model_chẹkpoints = torch.load('model/tiramisu.pth', map_location="cuda")
+#model_chẹkpoints = torch.load('model/tiramisu.pth', map_location="cuda")
 print('loading Model')
-model.load_state_dict(model_chẹkpoints)
+#model.load_state_dict(model_chẹkpoints)
 optimizer = torch.optim.RMSprop(model.parameters(), lr=1e-4, weight_decay=1e-4)
 loss = nn.CrossEntropyLoss()
 loss = nn.NLLLoss2d(weight=torch.Tensor(label_weight).cuda()).cuda()
@@ -70,7 +70,7 @@ for it, (imgs, targets) in enumerate(train):
     acc = 1 - train_error
     print(f'error = {train_error}')
     print(f'acc = {acc}')
-    print(f'loss ==> {loss_value.data[0]}')
+    print(f'loss ==> {loss_value.item()}')
     f, axarr = plt.subplots(ncols=2 , figsize=(10, 5))
     x = torch.argmax(preds, dim=1)[0]
     #_, idx = x.data.cpu().max(1)

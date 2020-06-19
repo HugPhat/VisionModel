@@ -79,7 +79,7 @@ class Tiramisu(nn.Module):
                                 in_channels=inp + out, 
                                 out_channels=self.num_classes, 
                                 kernel_size=1, stride=1, padding=0))
-        self.LastLayer.add_module('softmax', nn.LogSoftmax(dim=1))
+        self.LastLayer.add_module('softmax', nn.Softmax(dim=1))
         #self.LastLayer.add_module('pw_relu', nn.ReLU(inplace=True))
         #self.LastLayer.add_module('softmax', nn.Softmax(dim=1))    
         
