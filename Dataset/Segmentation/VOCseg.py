@@ -41,7 +41,7 @@ default_labels = [  'background',
 label_weight = []
 for each in default_labels[:-1]:
     if each == 'background':
-        label_weight.append(0.5)
+        label_weight.append(0.)
     else:
         label_weight.append(1.)
      
