@@ -13,7 +13,7 @@ import torch.nn.functional as F
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from Dataset.Segmentation.VOCseg import VOCseg
-from Backbone.Dense.Tiramisu103 import Tiramisu103
+from Backbone.Dense.Tiramisu import *
 
 imgset = r'D:\Code\Dataset\PASCAL-VOOC\VOCtrainval_11-May-2012\VOCdevkit\VOC2012\JPEGImages'
 labelset = r'D:\Code\Dataset\PASCAL-VOOC\VOCtrainval_11-May-2012\VOCdevkit\VOC2012\SegmentationClass'
@@ -35,13 +35,14 @@ def dice_loss(preds, targets):
 def error(preds, targets):
     preds2label = torch.argmax(preds, dim=1)
     bs, w, h = targets.size()
-    delta = targets.ne(preds2label).cpu().type(torch.cuda.FloatTensor)
+    delta =  (torch.ne(torch.flatten(targets), torch.flatten(preds2label)))
+    delta = delta.type(torch.FloatTensor)
     print(delta.sum()) 
 
     delta = delta.sum() / (bs*w*h)
-    return delta.item()
+    return delta
 
-model = Tiramisu103(init_weight = True, num_classes=21)
+model = Tiramisu57(init_weight = True, num_classes=21)
 model.cuda()
 model = nn.DataParallel(model)
 #model_chẹkpoints = torch.load('model/tiramisu.pth', map_location="cuda")
