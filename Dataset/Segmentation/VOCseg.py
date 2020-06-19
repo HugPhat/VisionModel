@@ -163,8 +163,9 @@ class VOCseg(Dataset):
             ratio = random.random()
             img = Crop(img, ratio)
             mask = Crop(mask, ratio)
-        if rand(0.8):
-            img = Gray(img)           
+        if rand(0.9):
+            img = Gray(img) 
+                      
         img = cv2.resize(img, self.img_size)
         mask = cv2.resize(mask, self.img_size)
         

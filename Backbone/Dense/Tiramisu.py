@@ -24,12 +24,12 @@ class Tiramisu(nn.Module):
         if init_weight:
             for m in self.model:
                 if isinstance(m, nn.Conv2d):
-                    nn.init.kaiming_normal_(m.weight)
+                    nn.init.xavier_uniform_(m.weight)
                 elif isinstance(m, nn.BatchNorm2d):
-                    nn.init.constant_(m.weight, 1)
-                    nn.init.constant_(m.bias, 0)
+                    nn.init.xavier_uniform_(m.weight, 1)
+                    nn.init.xavier_uniform_(m.bias, 0)
                 elif isinstance(m, nn.Linear):
-                    nn.init.constant_(m.bias, 0)
+                    nn.init.xavier_uniform_(m.bias, 0)
 
     def FirstBlock(self):
         x = nn.Conv2d(in_channels=3, out_channels=48,
