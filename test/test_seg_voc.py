@@ -62,9 +62,7 @@ for it, (imgs, targets) in enumerate(train):
     optimizer.zero_grad()
     preds = model(imgs)
     b,c,w,h = preds.size()         
-    #preds = preds.resize(b, c, w*h)
-    #preds = F.softmax(preds, 1)
-    #preds = preds.resize(b, c, w, h)
+
     
     targets = Variable(targets.type(LTensor), requires_grad=False)
     loss_value = loss(preds, targets)

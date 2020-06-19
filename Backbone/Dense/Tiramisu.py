@@ -98,7 +98,7 @@ class Tiramisu(nn.Module):
             x, upsamp = step(upsamp, skip_connection[neg_i])
             neg_i -= 1
         
-        #x = self.LastLayer(x) * -1 # Conv 1x1 | LogSoftmax
+        x = self.LastLayer(x)  # Conv 1x1 | LogSoftmax
        
         return x
 

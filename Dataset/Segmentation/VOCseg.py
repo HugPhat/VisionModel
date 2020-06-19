@@ -55,8 +55,9 @@ class VOCseg(Dataset):
                                'train', 
                                'tvmonitor', 
                                'void']
+    
         self.labels = self.default_labels
-        self.mask_color = list(self.color_map()[0:len(self.labels ) -1])
+        self.mask_color = list(self.color_map()[:len(self.labels ) -1])
         #self.mask_color.append(np.array([255.0, 255.0, 255.0]))
         self.list_items = []
         self.labels.pop(-1)
@@ -123,13 +124,6 @@ class VOCseg(Dataset):
             tmask = np.all(mask == each, axis=-1)
             indice += tmask*i
             lmask.append(tmask)
-            #print(np.max(tmask))
-            #print(each)
-            #if np.sum(tmask) > 1:
-            #    plt.imshow(tmask)
-            #    plt.show()
-            #print(tmask)
-        #return np.array(lmask)
         return np.array(indice)
     
     
@@ -170,20 +164,15 @@ class VOCseg(Dataset):
             img = Crop(img, ratio)
             mask = Crop(mask, ratio)
         if rand(0.8):
-            img = Gray(img)
-            
+            img = Gray(img)           
         img = cv2.resize(img, self.img_size)
         mask = cv2.resize(mask, self.img_size)
-        #plt.imshow(img)
-        #plt.show()
-
+        
         mask = self.create_mask(mask)
         
         img = self.preprocess(img)
         mask = torch.from_numpy(mask)
-        #img = img.unsqueeze(0)
-        #mask = mask.unsqueeze(0)
-        #mask =  
+ 
         return img, mask
 
     def __len__(self):
