@@ -16,7 +16,35 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__),  '..'))
 sys.path.append(os.path.dirname(__file__))
 
 from Utils import *
-
+default_labels = [  'background', 
+                    'aeroplane', 
+                    'bicycle', 
+                    'bird', 
+                    'boat', 
+                    'bottle', 
+                    'bus', 
+                    'car', 
+                    'cat', 
+                    'chair', 
+                    'cow', 
+                    'diningtable', 
+                    'dog', 
+                    'horse', 
+                    'motorbike', 
+                    'person', 
+                    'pottedplant', 
+                    'sheep', 
+                    'sofa', 
+                    'train', 
+                    'tvmonitor', 
+                    'void']
+label_weight = []
+for each in default_labels[:-1]:
+    if each == 'background':
+        label_weight.append(0.5)
+    else:
+        label_weight.append(1.)
+     
 class VOCseg(Dataset):
     def __init__(self, 
                     jpeg_src,
@@ -33,35 +61,14 @@ class VOCseg(Dataset):
          + Labels: Folder contains [png, PNG]
         '''
         super(VOCseg, self).__init__()
-        self.default_labels = ['background', 
-                               'aeroplane', 
-                               'bicycle', 
-                               'bird', 
-                               'boat', 
-                               'bottle', 
-                               'bus', 
-                               'car', 
-                               'cat', 
-                               'chair', 
-                               'cow', 
-                               'diningtable', 
-                               'dog', 
-                               'horse', 
-                               'motorbike', 
-                               'person', 
-                               'pottedplant', 
-                               'sheep', 
-                               'sofa', 
-                               'train', 
-                               'tvmonitor', 
-                               'void']
-    
-        self.labels = self.default_labels
+        
+        
+        self.labels = default_labels
         self.mask_color = list(self.color_map()[:len(self.labels ) -1])
         #self.mask_color.append(np.array([255.0, 255.0, 255.0]))
         self.list_items = []
         self.labels.pop(-1)
-        
+  
         for each in os.listdir(mask_src):
             name = each.split('.')[0]
             t = each.split('.')[-1]
@@ -91,7 +98,7 @@ class VOCseg(Dataset):
                             std=[0.229, 0.224, 0.225]),
                             ])
         
-        
+    
     def color_map(self, N=256, normalized=False):
         def bitget(byteval, idx):
             return ((byteval & (1 << idx)) != 0)

@@ -12,7 +12,7 @@ import torch.nn.functional as F
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from Dataset.Segmentation.VOCseg import VOCseg
+from Dataset.Segmentation.VOCseg import *
 from Backbone.Dense.Tiramisu import *
 
 imgset = r'D:\Code\Dataset\PASCAL-VOOC\VOCtrainval_11-May-2012\VOCdevkit\VOC2012\JPEGImages'
@@ -33,9 +33,9 @@ def dice_loss(preds, targets):
   return  1 - torch.mean(dice)
 
 def error(preds, targets):
-    preds2label = torch.argmax(preds, dim=1)
+    preds2label = torch.argmax(preds.data.cpu(), dim=1)
     bs, w, h = targets.size()
-    delta =  (torch.ne(torch.flatten(targets), torch.flatten(preds2label)))
+    delta =  (torch.ne(torch.flatten(targets.data.cpu()), torch.flatten(preds2label)).cpu())
     delta = delta.type(torch.FloatTensor)
     print(delta.sum()) 
 
@@ -48,9 +48,9 @@ model = nn.DataParallel(model)
 #model_chẹkpoints = torch.load('model/tiramisu.pth', map_location="cuda")
 print('loading Model')
 #qmodel.load_state_dict(model_chẹkpoints)
-optimizer = torch.optim.RMSprop(model.parameters(), lr=1e-4, alpha=0.995, weight_decay=1e-4)
+optimizer = torch.optim.RMSprop(model.parameters(), lr=1e-4, weight_decay=1e-4)
 loss = nn.CrossEntropyLoss()
-loss = nn.NLLLoss2d()
+loss = nn.NLLLoss2d(weight=torch.Tensor(label_weight).cuda()).cuda()
 
 Tensor = torch.cuda.FloatTensor 
 LTensor = torch.cuda.LongTensor 
@@ -74,7 +74,7 @@ for it, (imgs, targets) in enumerate(train):
     f, axarr = plt.subplots(ncols=2 , figsize=(10, 5))
     x = torch.argmax(preds, dim=1)[0]
     print(torch.min(x))
-    print(torch.min(targets))
+    print(torch.max(x))
     axarr[0].imshow(np.array(x.cpu().data))
     axarr[1].imshow(np.array(targets[0].cpu().data))
     plt.show()
