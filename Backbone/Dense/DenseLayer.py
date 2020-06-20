@@ -108,7 +108,8 @@ class TransitionUp(nn.Module):
         self.bn = nn.BatchNorm2d(n_inp)
         self.relu = nn.ReLU(inplace=True)
         self.conv = nn.ConvTranspose2d(n_inp, n_out,
-                                       kernel_size=3, stride=2,
+                                       kernel_size=3, 
+                                       stride=2,
                                        padding=1,
                                        bias=True,
                                        )
