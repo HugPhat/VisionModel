@@ -17,9 +17,11 @@ from Backbone.Dense.Tiramisu import *
 
 imgset = r'D:\Code\Dataset\PASCAL-VOOC\VOCtrainval_11-May-2012\VOCdevkit\VOC2012\JPEGImages'
 labelset = r'D:\Code\Dataset\PASCAL-VOOC\VOCtrainval_11-May-2012\VOCdevkit\VOC2012\SegmentationClass'
+labelset = r'E:\ProgrammingSkills\python\DEEP_LEARNING\DATASETS\PASCALVOC\VOCdevkit\VOC2012\SegmentationClass'
+imgset = r'E:\ProgrammingSkills\python\DEEP_LEARNING\DATASETS\PASCALVOC\VOCdevkit\VOC2012\JPEGImages'
 
 train = torch.utils.data.DataLoader(
-    VOCseg(imgset, labelset), batch_size=3, 
+    VOCseg(imgset, labelset), batch_size=1, 
     shuffle=True, num_workers=0, drop_last = False
 )
 
@@ -84,25 +86,6 @@ for it, (imgs, targets) in enumerate(train):
     axarr[2].imshow(np.array(imgs[0].permute(1, 2, 0).cpu().data))
     plt.show()
     del x, train_error, acc
-    '''
-    for i in range(c):
-        f, axarr = plt.subplots(ncols=2 , figsize=(10, 5))
-        pred = preds[0,i,:,:]
-        print(torch.min(pred))
-        print(torch.max(pred))
-        print(pred)
-        #target = targets[0,i,:,:]
-        #print(torch.max(target))
-        #print((pred * target).sum())
-        #print((torch.square(pred) + torch.square(target)).sum())
-        print('--------')
-        axarr[0].imshow(np.array(pred.cpu().data))
-        axarr[1].imshow(np.array(targets[0].cpu().data))
 
-        #print(sum1)
-        #plt.imshow(np.array(preds[1,i,:,:].cpu().data))
-        plt.show()
-    '''
-    
     loss_value.backward()
     optimizer.step()

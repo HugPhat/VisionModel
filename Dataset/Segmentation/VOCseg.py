@@ -41,7 +41,7 @@ default_labels = [  'background',
 label_weight = []
 for each in default_labels[:-1]:
     if each == 'background':
-        label_weight.append(0.5)
+        label_weight.append(1.)
     else:
         label_weight.append(1.)
      
@@ -182,7 +182,7 @@ class VOCseg(Dataset):
         mask = cv2.resize(mask, self.img_size)
         
         mask = self.create_mask(mask)
-        img = self.preprocess(img)
+        img = self.preprocess(img / 255.0)
         mask = torch.from_numpy(mask)
  
         return img, mask
