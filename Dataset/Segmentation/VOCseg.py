@@ -124,7 +124,7 @@ class VOCseg(Dataset):
     def create_mask(self, mask):
         #lmask = np.all(mask == self.mask_color[0], axis=-1)
         lmask = []
-        indice = 0
+        indice = np.zeros(self.img_size)
         #plt.imshow(mask)
         #plt.show()
         _mask = mask.copy()
@@ -171,7 +171,7 @@ class VOCseg(Dataset):
         if rand(0.7):
             img = Flip(img, 'h')
             mask = Flip(mask, 'h')
-        if rand(0.95):    
+        if rand(0.99):    
             ratio = random.random()
             img = Crop(img, ratio)
             mask = Crop(mask, ratio)
@@ -182,7 +182,8 @@ class VOCseg(Dataset):
         mask = cv2.resize(mask, self.img_size)
         
         mask = self.create_mask(mask)
-        img = self.preprocess(img / 255.0)
+        img = img / 255.0
+        img = self.preprocess(img)
         mask = torch.from_numpy(mask)
  
         return img, mask
