@@ -124,7 +124,7 @@ class CamVid(Dataset):
         mask = Image.open(mask)
         img = np.array(img)
         mask = np.array(mask)
-
+        
         #if rand():
         #    angle = random.randint(-40, 40)
         #    img = Rotate(img, angle)
@@ -140,32 +140,24 @@ class CamVid(Dataset):
             img = Hue(img)
         if rand(0.1):
             img = Saturation(img)
-        if rand(0.99):
-            x = random.random()
-            if x > 0.8 and x < 1.2:
-                img = Scale(img, x)
-                mask = Scale(mask, x)
+       
         if rand(0.9):
             img = Flip(img, 'v')
             mask = Flip(mask, 'v')
         if rand(0.7):
             img = Flip(img, 'h')
             mask = Flip(mask, 'h')
-        if rand(0.99):
-            ratio = random.random()
-            img = Crop(img, ratio)
-            mask = Crop(mask, ratio)
         if rand(0.9):
             img = Gray(img)
 
-        img = cv2.resize(img, self.img_size)
-        mask = cv2.resize(mask, self.img_size)
+        img = cv2.resize(img, self.img_size, interpolation=cv2.INTER_CUBIC)
+        mask = cv2.resize(mask, self.img_size, interpolation=cv2.INTER_CUBIC)
 
         # dont need the dataset already labeled
         #mask = self.create_mask(mask)
 
         img = self.preprocess((img))
-        mask = transforms.ToTensor()((mask))
+        mask = torch.from_numpy(mask).unsqueeze(0)
 
         return img, mask
 
