@@ -157,7 +157,7 @@ class CamVid(Dataset):
         #mask = self.create_mask(mask)
 
         img = self.preprocess((img))
-        mask = torch.from_numpy(mask).unsqueeze(0)
+        mask = torch.from_numpy(mask)
 
         return img, mask
 
