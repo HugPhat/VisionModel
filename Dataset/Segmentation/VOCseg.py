@@ -184,7 +184,7 @@ class VOCseg(Dataset):
         mask = self.create_mask(mask)
 
         img = self.preprocess((img))
-        mask = transforms.ToTensor()((mask))
+        mask = torch.from_numpy(mask)
  
         return img, mask
 
