@@ -124,7 +124,6 @@ class CamVid(Dataset):
         mask = Image.open(mask)
         img = np.array(img)
         mask = np.array(mask)
-        print(mask.shape)
 
         #if rand():
         #    angle = random.randint(-40, 40)
