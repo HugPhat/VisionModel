@@ -140,7 +140,7 @@ class CamVid(Dataset):
             img = Hue(img)
         if rand(0.1):
             img = Saturation(img)
-        if rand(0.6):
+        if rand(0.99):
             x = random.random()
             if x > 0.8 and x < 1.2:
                 img = Scale(img, x)
