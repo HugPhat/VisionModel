@@ -25,9 +25,15 @@ def Rotate(image, angle):
 
 def Flip(img, mode = 'v'):
     if mode == 'v':
-        img = img[::-1, :,:]
+        try:
+            img = img[::-1, :,:]
+        except:
+            img = img[::-1, :]
     elif mode == 'h':
-        img = img[:,::-1,:]
+        try:
+            img = img[:,::-1,:]
+        except:
+            img = img[:, ::-1]
     else:
         raise Exception('mode = h or v')
     return img
@@ -69,7 +75,7 @@ def Brightness(bgr):
     return bgr
 
 def Scale(img, scale):
-    h, w, _ = img.shape
+    h, w = img.shape[0], img.shape[1]
     img = cv2.resize(img, dsize=(
         int(w * scale), int(h*scale)), interpolation=cv2.INTER_LINEAR)
     return img
@@ -96,7 +102,7 @@ def rand(v = 0.6):
     return False
 
 def CenterCrop(img, size):
-    h, w,_ = img.shape
+    h, w = img.shape[0], img.shape[1]
     xy1 = (w - size[0]) // 2
     xy2 = (h - size[1]) // 2
     return img[xy2:(xy2 + size[0]), xy1:(xy1 + size[1])]

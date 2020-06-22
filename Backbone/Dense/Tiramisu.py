@@ -74,6 +74,7 @@ class Tiramisu(nn.Module):
               inp=inp,
               out=out,
               growth_rate=self.growth_rate))
+              
         self.LastLayer = nn.Sequential()
         self.LastLayer.add_module('point_wise',nn.Conv2d( \
                                 in_channels=inp + out, 
