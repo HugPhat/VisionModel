@@ -150,8 +150,8 @@ class CamVid(Dataset):
         if rand(0.9):
             img = Gray(img)
 
-        img = cv2.resize(img, self.img_size, interpolation=cv2.INTER_CUBIC)
-        mask = cv2.resize(mask, self.img_size, interpolation=cv2.INTER_CUBIC)
+        img = cv2.resize(img, self.img_size)
+        mask = cv2.resize(mask, self.img_size)
 
         # dont need the dataset already labeled
         #mask = self.create_mask(mask)
