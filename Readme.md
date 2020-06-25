@@ -4,8 +4,8 @@ Recode models I've used
 + Tiramisu
 + Yolov3 [in progress]
 # To do
- - [] Siamese
- - [] ResNet 18, 50
- - [] EfficientNet
- - [] Yolov4
- - [] Openpose
+ - [ ] Siamese
+ - [ ] ResNet 18, 50
+ - [ ] EfficientNet
+ - [ ] Yolov4
+ - [ ] Openpose
