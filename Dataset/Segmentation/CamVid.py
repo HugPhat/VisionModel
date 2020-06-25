@@ -42,7 +42,7 @@ class CamVid(Dataset):
                  ):
         '''
         Pascal Voc Format for class segmentation
-         + Images: Folder contains [jpg, JPG]
+         + Images: Folder contains [jpg, JPG] or [png , PNG]
          + Labels: Folder contains [png, PNG]
         '''
         super(CamVid, self).__init__()
@@ -50,10 +50,7 @@ class CamVid(Dataset):
         self.center_crop = center_crop
 
         self.labels = default_labels
-        #self.mask_color = list(self.color_map()[:len(self.labels) - 1])
-        #self.mask_color.append(np.array([255.0, 255.0, 255.0]))
         self.list_items = []
-        #self.labels.pop(-1)
 
         for each in os.listdir(mask_src):
             name = each.split('.')[0]
@@ -102,20 +99,6 @@ class CamVid(Dataset):
         cmap = cmap/255 if normalized else cmap
         return cmap
 
-    def create_mask(self, mask):
-        #lmask = np.all(mask == self.mask_color[0], axis=-1)
-        lmask = []
-        indice = np.zeros(self.img_size)
-        #plt.imshow(mask)
-        #plt.show()
-        _mask = mask.copy()
-        _mask[_mask == np.max(mask)] = 0
-        for i, each in enumerate(self.mask_color):
-            tmask = np.all(mask == each, axis=-1)
-            indice += tmask*i
-            lmask.append(tmask)
-        return np.array(indice)
-
     def __getitem__(self, index):
         item = self.list_items[index]
         img = os.path.join(self.image_src, item + '.png')
@@ -132,6 +115,9 @@ class CamVid(Dataset):
         if self.center_crop:
             img = CenterCrop(img, self.img_size)
             mask = CenterCrop(mask, self.img_size)
+        
+        # rand(v = 0.6)
+        # v: threshold of random 
         if rand():
             img = Blur(img)
         if rand(0.1):
@@ -140,7 +126,6 @@ class CamVid(Dataset):
             img = Hue(img)
         if rand(0.1):
             img = Saturation(img)
-       
         if rand(0.9):
             img = Flip(img, 'v')
             mask = Flip(mask, 'v')
