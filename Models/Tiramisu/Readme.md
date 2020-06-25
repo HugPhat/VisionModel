@@ -9,6 +9,6 @@ The 103 is trained on [Camvid dataset](https://github.com/alexgkendall/SegNet-Tu
 
 Install tensorboard to see the final result 
 
->> tensorboard --log-dir=[5015_22062020](Models/Tiramisu/5015_22062020)
+>> tensorboard --log-dir=[5015_22062020](5015_22062020)
 
 train notebook can be found here [Colab](https://colab.research.google.com/drive/11mcSLWGvyLmh63-vFQThhyW_vwdiOX_y?usp=sharing)
