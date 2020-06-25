@@ -126,16 +126,9 @@ class MobileNetv2(nn.Module):
     
     def forward(self, x):
         for block_name, module in zip(self.blocks, self.model):
-            #if self.debug:
-            #    print(f'We reach {block_name}')
-            #    print(f'input size [{x.size()}]')
-            x = module(x)
-            #if self.debug:
-            #    print(f'output size [{x.size()}]')
-        
+            x = module(x)    
         x = F.avg_pool2d(x, 7)
         x = x.mean(3).mean(2)
-        
         x = self.classifier(x)
-        print(x.size())
+        x = F.softmax(x, dim=1)
         return x    
