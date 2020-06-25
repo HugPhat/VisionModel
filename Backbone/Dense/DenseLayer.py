@@ -101,7 +101,6 @@ class TransitionUp(nn.Module):
         return x
 '''
 
-
 class TransitionUp(nn.Module):
     def __init__(self, n_inp, n_out):
         super(TransitionUp, self).__init__()
@@ -121,7 +120,6 @@ class TransitionUp(nn.Module):
         x = self.conv(x, output_size=output_size)
         return x
 
-
 class DownStep(nn.Module):
     def __init__(self, num, inp, out, growth_rate, ):
         super(DownStep, self).__init__()
@@ -132,6 +130,7 @@ class DownStep(nn.Module):
     def forward(self, x):
         x1 = self.dense_block(x)
         x2 = self.down(x1)
+        
         return x1, x2
 
 
