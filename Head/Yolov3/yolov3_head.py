@@ -64,8 +64,12 @@ class yoloDetection(nn.Module):
                                      for aw, ah in self.anchor])
         anchor_x = scale_anchors[:, 0:1].view((1, self.num_anchor, 1, 1))
         anchor_y = scale_anchors[:, 1:2].view((1, self.num_anchor, 1, 1))
+<<<<<<< HEAD
  
  
+=======
+
+>>>>>>> 1766a63a8eed803fc611c2d8a485a05215da2953
         pred_boxes = FloatTensor(predict[..., :4].shape)
         pred_boxes[..., 0] = x.data + coor_x
 
