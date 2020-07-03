@@ -45,10 +45,10 @@ def error(preds, targets):
     delta = delta.sum() / (bs*w*h)
     return delta
 
-model = Tiramisu103(init_weight = True, num_classes=21)
+model = Tiramisu103(init_weight = True, num_classes=12)
 model.cuda()
 model = nn.DataParallel(model)
-model_chẹkpoints = torch.load('model/tiramisu.pth', map_location="cuda")
+model_chẹkpoints = torch.load(r'\Models\Tiramisu\tiramisu103.pth', map_location="cuda")
 print('loading Model')
 model.load_state_dict(model_chẹkpoints)
 optimizer = torch.optim.RMSprop(model.parameters(), lr=1e-4, weight_decay=1e-4)
