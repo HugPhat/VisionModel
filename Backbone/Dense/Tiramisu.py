@@ -125,3 +125,11 @@ def Tiramisu67(num_classes = 21, init_weight=False):
                     num_classes=num_classes,
                     init_weight = init_weight
                     )
+def TiramisuLite(num_classes=2, init_weight = False):
+    return Tiramisu(
+                    growth_rate=7, 
+                    flow=[ 2, 3, 4, 5, 7],
+                    mid = 7,
+                    num_classes=num_classes,
+                    init_weight = init_weight,
+                    )
