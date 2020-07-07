@@ -71,7 +71,7 @@ class NpPortraitSet(Dataset):
     
     def create_mask(self, mask):
         #lmask = np.all(mask == self.mask_color[0], axis=-1)
-        res = mask / np.max(mask)
+        res = mask / 255.0
         return res
     
     
