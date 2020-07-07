@@ -52,7 +52,7 @@ class NpPortraitSet(Dataset):
             
         elif mode == 'train':
             tsplit = int(len(self.image_src)*ratio)
-            print(f'tsplit {tsplit}')
+            #print(f'tsplit {tsplit}')
             self.image_src = self.image_src[:tsplit]
             self.mask_src = self.mask_src[:tsplit]
         else:
@@ -76,7 +76,7 @@ class NpPortraitSet(Dataset):
     
     
     def __getitem__(self, index):
-        print(index)
+        #print(index)
         img = self.image_src[index]
         mask = self.mask_src[index].squeeze(-1)
         
