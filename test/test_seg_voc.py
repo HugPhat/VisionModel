@@ -11,6 +11,7 @@ import torch.optim as optim
 import torch.nn.functional as F
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__)))
 
 from Dataset.Segmentation.VOCseg import *
 
@@ -18,8 +19,8 @@ from Backbone.Dense.Tiramisu import *
 
 imgset = r'D:\Code\Dataset\PASCAL-VOOC\VOCtrainval_11-May-2012\VOCdevkit\VOC2012\JPEGImages'
 labelset = r'D:\Code\Dataset\PASCAL-VOOC\VOCtrainval_11-May-2012\VOCdevkit\VOC2012\SegmentationClass'
-labelset = r'E:\ProgrammingSkills\python\DEEP_LEARNING\DATASETS\PASCALVOC\VOCdevkit\VOC2012\SegmentationClass'
-imgset = r'E:\ProgrammingSkills\python\DEEP_LEARNING\DATASETS\PASCALVOC\VOCdevkit\VOC2012\JPEGImages'
+#labelset = r'E:\ProgrammingSkills\python\DEEP_LEARNING\DATASETS\PASCALVOC\VOCdevkit\VOC2012\SegmentationClass'
+#imgset = r'E:\ProgrammingSkills\python\DEEP_LEARNING\DATASETS\PASCALVOC\VOCdevkit\VOC2012\JPEGImages'
 
 train = torch.utils.data.DataLoader(
     VOCseg(imgset, labelset), batch_size=1, 
@@ -45,12 +46,20 @@ def error(preds, targets):
     delta = delta.sum() / (bs*w*h)
     return delta
 
-model = Tiramisu103(init_weight = True, num_classes=21)
+model = Tiramisu103(init_weight = True, num_classes=2)
+model.load_pretrained_weight(path_pretrained= os.path.join(os.path.dirname(__file__), r'..\Models\Tiramisu\tiramisu103.pth'), watching=True)
+print('Done Loading')
+
 model.cuda()
+
+
 model = nn.DataParallel(model)
-model_chẹkpoints = torch.load('model/tiramisu.pth', map_location="cuda")
-print('loading Model')
-model.load_state_dict(model_chẹkpoints)
+
+
+
+#model_chẹkpoints = torch.load(r'\Models\Tiramisu\tiramisu103.pth', map_location="cuda")
+#print('loading Model')
+#model.load_state_dict(model_chẹkpoints)
 optimizer = torch.optim.RMSprop(model.parameters(), lr=1e-4, weight_decay=1e-4)
 loss = nn.CrossEntropyLoss()
 loss = nn.CrossEntropyLoss(weight=torch.Tensor(label_weight).cuda()).cuda()

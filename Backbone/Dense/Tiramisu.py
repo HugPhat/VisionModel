@@ -100,6 +100,26 @@ class Tiramisu(nn.Module):
         x = self.LastLayer(x)  # Conv 1x1 | LogSoftmax
        
         return x
+    # ==> for class 
+    def load_pretrained_weight(self, path_pretrained = r'..\Models\Tiramisu\tiramisu103.pth', watching = True):
+        # 0. load pretrained state dict
+        pretrained_dict = torch.load(path_pretrained)
+        # 0.1 get state dict
+        model_dict = self.state_dict()
+        # 1. filter out unnecessary keys
+        tmp_pretrained_dict = {}
+        for k, v in list(pretrained_dict.items())[:-2]:
+            if k in model_dict:
+                if watching:
+                    print(f'match==>{k}')
+                tmp_pretrained_dict.update({k: v})
+        else:
+            if watching:
+                print(f'unmatch==>{k}')
+        # 2. overwrite entries in the existing state dict
+        model_dict.update(tmp_pretrained_dict)
+        # 3. load the new state dict
+        self.load_state_dict(model_dict)
 
 def Tiramisu103(num_classes = 21, init_weight=False):
     return Tiramisu(
