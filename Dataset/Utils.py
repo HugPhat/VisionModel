@@ -2,6 +2,7 @@ import numpy as np
 import cv2
 import random
 
+from torchvision import transforms
 
 def Rotate(image, angle):
     # grab the dimensions of the image and then determine the
@@ -107,3 +108,14 @@ def CenterCrop(img, size):
     xy2 = (h - size[1]) // 2
     return img[xy2:(xy2 + size[0]), xy1:(xy1 + size[1])]
     
+normalize_image = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize(
+                            mean=[0.485, 0.456, 0.406], 
+                            std=[0.229, 0.224, 0.225]),
+                            ])
+
+denormalize_image = transforms.Compose( [transforms.Normalize(
+                            mean=[-0.485/0.229, -0.456/0.224, -0.406/0.225], 
+                            std=[1/0.229, 1/0.224, 1/0.255]),
+                            ])

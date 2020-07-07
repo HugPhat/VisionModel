@@ -49,7 +49,7 @@ def TargetBuilder(PredBoxes,
                   iou_thresh = 0.5,
                   class_thresh = 0.5,
                   ):
-    NB = predicts.size(0) # num  batches
+    NB = PredBoxes.size(0) # num  batches
     
     NA = len(anchors) # num anchors
     NG1 = n_grid1

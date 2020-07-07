@@ -1,7 +1,15 @@
 import os
 import sys
 
+from PIL import Image
+import numpy as np 
+import cv2
+import torchvision.transforms as transforms
+
+from torch.autograd import Variable
+
 sys.path.insert(0, os.path.dirname(__file__))
+
 
 from DenseLayer import *
 
@@ -30,7 +38,9 @@ class Tiramisu(nn.Module):
                     nn.init.xavier_uniform_(m.bias)
                 elif isinstance(m, nn.Linear):
                     nn.init.xavier_uniform_(m.bias)
-
+                    
+        
+        
     def FirstBlock(self):
         x = nn.Conv2d(in_channels=3, out_channels=48,
                       kernel_size=3, stride=1,
@@ -100,7 +110,62 @@ class Tiramisu(nn.Module):
         x = self.LastLayer(x)  # Conv 1x1 | LogSoftmax
        
         return x
+    # ==> for class 
+    def load_pretrained_weight(self, path_pretrained = r'..\Models\Tiramisu\tiramisu103.pth', watching = True):
+        # 0. load pretrained state dict
+        pretrained_dict = torch.load(path_pretrained)
+        # 0.1 get state dict
+        model_dict = self.state_dict()
+        # 1. filter out unnecessary keys
+        tmp_pretrained_dict = {}
+        for k, v in list(pretrained_dict.items())[:-2]:
+            if k in model_dict:
+                if watching:
+                    print(f'match==>{k}')
+                tmp_pretrained_dict.update({k: v})
+        else:
+            if watching:
+                print(f'unmatch==>{k}')
+        # 2. overwrite entries in the existing state dict
+        model_dict.update(tmp_pretrained_dict)
+        # 3. load the new state dict
+        self.load_state_dict(model_dict)
 
+def preprocess(img, size):
+    normalize_image = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize(
+                            mean=[0.485, 0.456, 0.406], 
+                            std=[0.229, 0.224, 0.225]),
+                            ])
+    img = cv2.resize(img, size)
+    img = normalize_image(img).unsqueeze(0)
+    return img
+
+    
+def predict(model, img, size = (224, 224), use_cuda = True):
+    if type(img) == str:
+        img = cv2.imread(img)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  
+    elif type(img) != np.ndarray:
+        raise ValueError("args [img] should be numpy array or path to image")
+    
+    img = preprocess(img, size)
+ 
+    img = Variable(img.type(torch.cuda.FloatTensor)).cuda() if use_cuda  \
+                            else  Variable(img.type(torch.FloatTensor))
+    
+    model.eval()
+    with torch.no_grad():
+        preds = model(img)
+        
+    if use_cuda:
+        res = torch.argmax(preds, dim=1).cpu().data  
+    else:
+        res = torch.argmax(preds, dim=1).data   
+        
+    return res
+    
 def Tiramisu103(num_classes = 21, init_weight=False):
     return Tiramisu(
                     growth_rate=16, 
@@ -133,3 +198,4 @@ def TiramisuLite(num_classes=2, init_weight = False):
                     num_classes=num_classes,
                     init_weight = init_weight,
                     )
+    
