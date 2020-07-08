@@ -13,3 +13,5 @@ lib64
 __pycache__
 test
 *.pth
+*.jpg
+*.png
