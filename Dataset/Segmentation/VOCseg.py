@@ -54,7 +54,8 @@ class VOCseg(Dataset):
                     img_size = (224, 224),
                     mode = 'train',
                     ratio = 0.8,
-                    center_crop = True
+                    center_crop = True,
+                    classes = 'all'
                 ):
         '''
         Pascal Voc Format for class segmentation
@@ -91,7 +92,18 @@ class VOCseg(Dataset):
         self.mask_src = mask_src
         self.img_size = img_size
 
-        
+        if isinstance(classes, list):
+            if not 'all' in classes:
+                tmp = [(self.mask_color[0]),]
+                for each in classes:
+                    if each in default_labels[1: len(default_labels) -1]:
+                        tmp.append(self.mask_color[default_labels.index(each)])
+
+                self.mask_color = tmp
+            
+        else:
+            raise ValueError('[classes] should be list, default [all]')
+              
         #print(self.labels)
         self.preprocess = transforms.Compose([
         transforms.ToTensor(),

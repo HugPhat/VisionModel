@@ -159,10 +159,8 @@ def predict(model, img, size = (224, 224), use_cuda = True):
     with torch.no_grad():
         preds = model(img)
         
-    if use_cuda:
-        res = torch.argmax(preds, dim=1).cpu().data  
-    else:
-        res = torch.argmax(preds, dim=1).data   
+
+    res = torch.argmax(preds, dim=1).cpu().data   
         
     return res
     
