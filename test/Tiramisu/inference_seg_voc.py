@@ -10,7 +10,7 @@ from torch.autograd import Variable
 import torch.optim as optim
 import torch.nn.functional as F
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))
 sys.path.insert(0, os.path.join(os.path.dirname(__file__)))
 
 from Dataset.Segmentation.VOCseg import *
@@ -23,7 +23,7 @@ labelset = r'D:\Code\Dataset\PASCAL-VOOC\VOCtrainval_11-May-2012\VOCdevkit\VOC20
 #imgset = r'E:\ProgrammingSkills\python\DEEP_LEARNING\DATASETS\PASCALVOC\VOCdevkit\VOC2012\JPEGImages'
 
 train = torch.utils.data.DataLoader(
-    VOCseg(imgset, labelset), batch_size=1, 
+    VOCseg(imgset, labelset, classes=['all']), batch_size=1, 
     shuffle=True, num_workers=0, drop_last = False
 )
 
@@ -47,7 +47,7 @@ def error(preds, targets):
     return delta
 
 model = Tiramisu103(init_weight = True, num_classes=2)
-model.load_pretrained_weight(path_pretrained= os.path.join(os.path.dirname(__file__), r'..\Models\Tiramisu\tiramisu103.pth'), watching=True)
+model.load_pretrained_weight(path_pretrained= os.path.join(os.path.dirname(__file__), r'..\..\Models\Tiramisu\tiramisu103.pth'), watching=True)
 print('Done Loading')
 
 model.cuda()
@@ -62,7 +62,7 @@ model = nn.DataParallel(model)
 #model.load_state_dict(model_chẹkpoints)
 optimizer = torch.optim.RMSprop(model.parameters(), lr=1e-4, weight_decay=1e-4)
 loss = nn.CrossEntropyLoss()
-loss = nn.CrossEntropyLoss(weight=torch.Tensor(label_weight).cuda()).cuda()
+loss = nn.CrossEntropyLoss().cuda()
 
 Tensor = torch.cuda.FloatTensor 
 LTensor = torch.cuda.LongTensor 

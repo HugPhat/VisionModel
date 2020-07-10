@@ -45,12 +45,16 @@ inv_normalize = transforms.Compose( [transforms.Normalize(
                             std=[1/0.229, 1/0.224, 1/0.255]),
                             ])
 
-model = Tiramisu103(init_weight = True, num_classes=2)
-#model.cuda()
-model = nn.DataParallel(model)
-model_chẹkpoints = torch.load(os.path.join(os.path.dirname(__file__),r'..\..\Models\Tiramisu\tiramisu103_portrait.pth'), map_location="cuda")
+model = TiramisuLite(init_weight = True, num_classes=2)
+model.cuda()
 print('loading Model')
-model.load_state_dict(model_chẹkpoints)
+model_checkpoints = torch.load(os.path.join(os.path.dirname(__file__), \
+                                 r'..\..\Models\Tiramisu\tiramisuLite.pth'), map_location="cpu")
+model.load_state_dict(model_checkpoints)
+model = nn.DataParallel(model)
+
+torch.save(model.module.state_dict(), 'tiramisuLite.pth')
+
 optimizer = torch.optim.RMSprop(model.parameters(), lr=1e-4, weight_decay=1e-4)
 
 loss = nn.CrossEntropyLoss().cuda()
@@ -60,11 +64,11 @@ LTensor = torch.cuda.LongTensor
 
 model.eval()
 
-INPUT_IMG = r"D:\Files\phat_only\pytorchModels\test\Tiramisu\beauty.jpg"
+INPUT_IMG = r"D:\Files\phat_only\pytorchModels\test\Tiramisu\port7.jpg"
 IMG = np.asarray(Image.open(INPUT_IMG))
 
 tic = time.time()
-mask = predict(model, INPUT_IMG, use_cuda=False)
+mask = predict(model, INPUT_IMG, use_cuda=True)
 print(f'prediction in {round( time.time() - tic,2)}s')
 
 mask = mask.squeeze(0).numpy().astype('uint8')*255
@@ -91,9 +95,10 @@ IMG = np.uint8(IMG*dilation_mask)
 
 #mask = cv2.cvtColor(mask, cv2.COLOR_GRAY2RGB)
 
+print(np.uint8(dilation_mask*255).shape)
 f, axarr = plt.subplots(ncols=3 , figsize=(15, 5))
 
-cv2.imwrite('trimap.jpg', np.uint8(dilation_mask*255))
+#cv2.imwrite('trimap.jpg', np.uint8(dilation_mask*255))
 
 axarr[0].imshow(IMG)
 axarr[1].imshow(mask)
