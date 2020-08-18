@@ -94,7 +94,9 @@ class MobileNetv2(nn.Module):
         return nn.Sequential(
         nn.Conv2d(inp, oup, 1, 1, 0, bias=False),
         nn.BatchNorm2d(oup),
-        nn.ReLU6(inplace=True))
+        nn.ReLU6(inplace=True),
+        nn.Dropout2d(0.2)
+        )
         
         
     def constructNet(self):
@@ -105,7 +107,7 @@ class MobileNetv2(nn.Module):
         self.blocks.append('FirstBlock')
         self.model.append(fmodule)
         
-        Id = 0
+        Id = 1
         for t, c, n, s in self.model_hyperparams:
             for block in range(n):
                 stride = s if block == 0 else 1
@@ -121,8 +123,10 @@ class MobileNetv2(nn.Module):
                 prev_filter = c
         self.blocks.append('last_conv_1_1')        
         self.model.append(self.conv_1x1_bn(prev_filter, self.last_channel))
-        
         self.classifier=  nn.Linear(self.last_channel, self.n_classes)
+        if self.debug:
+            print(f'[1] with Id {Id}==> block {block} : [in]: {prev_filter}, [out]: {self.last_channel}')
+            print(f'[1] with Id {Id + 1}==> block {block} : [in]: {self.last_channel}, [out]: {self.n_classes}')
     
     def forward(self, x):
         for block_name, module in zip(self.blocks, self.model):
