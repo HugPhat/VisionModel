@@ -8,7 +8,7 @@ from Backbone.MobileNetv2.MobileNetv2 import MobileNetv2
 model = MobileNetv2(debug = True)
 
 dummy_input = torch.ones((1, 3, 224, 224))
-model.train()
+model.eval()
 
 x = model(dummy_input)
 #print(x.size())

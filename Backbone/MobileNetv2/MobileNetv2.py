@@ -40,7 +40,7 @@ class InvertedBlock(nn.Module):
         module.add_module(_prefix + 'DW_CONV_' + str(self.Id), \
                                 nn.Conv2d(DWs, DWs, kernel_size=3, 
                                             stride= (self.stride, self.stride), 
-                                            padding= pad, groups=self.factor, bias=False))
+                                            padding= pad, groups=DWs, bias=False))
         module.add_module(_prefix + 'DW_BN_' + str(self.Id), \
                                 nn.BatchNorm2d(DWs))
         module.add_module(_prefix + 'DW_RELU6_' + str(self.Id), \
@@ -107,7 +107,7 @@ class MobileNetv2(nn.Module):
         self.blocks.append('FirstBlock')
         self.model.append(fmodule)
         
-        Id = 1
+        Id = 0
         for t, c, n, s in self.model_hyperparams:
             for block in range(n):
                 stride = s if block == 0 else 1
