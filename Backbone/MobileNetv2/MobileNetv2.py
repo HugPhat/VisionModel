@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F 
 from collections import OrderedDict
+from torchvision import transforms as T
 
 class InvertedBlock(nn.Module):
     def __init__(self, input_size, output_size, stride, factor, Id ):
@@ -77,7 +78,13 @@ class MobileNetv2(nn.Module):
             [6, 320, 1, 1]
         ]
         self.constructNet()
-        
+        self.T = T.Compose([
+                            T.Resize(256),
+                            T.CenterCrop(224),
+                            T.ToTensor(),
+                            T.Normalize(mean=[0.485, 0.456, 0.406], 
+                                        std=[0.229, 0.224, 0.225]),
+                            ])
     def firstBlock(self, module):
         out_filter = 32
         # 3: RGB image
@@ -136,3 +143,11 @@ class MobileNetv2(nn.Module):
         x = self.classifier(x)
         x = F.softmax(x, dim=1)
         return x    
+
+    def predict(self, img, cuda = False):
+        inp = self.T(img).unsqueeze(0)
+        if cuda: inp = inp.to('cuda')
+        out = self(inp)
+        clss = torch.argmax(out)
+        conf = torch.max(out).item()
+        return clss, conf
