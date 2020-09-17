@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn 
 
 use_bb_with_dw = False
+dws_ratio = 1
 
 def basic_block(inp, use_bn = True):
     _basic_block = nn.Sequential()
@@ -31,8 +32,7 @@ def basic_block(inp, use_bn = True):
         _basic_block.add_module('Relu_1', nn.ReLU(inplace=True))
     else:
         #print('dw')
-        t = 1
-        dws = t*inp
+        dws = dws_ratio*inp
         # Conv1x1
         _basic_block.add_module('Con2d_1x1', nn.Conv2d(inp, dws, kernel_size=1, stride=1, padding=0))
         if use_bn:
