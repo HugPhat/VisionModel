@@ -140,24 +140,47 @@ class hourglass_module(nn.Module):
 ####### Intermediate Supervision ###########
 
 class intermediate_supervision(nn.Module):
-    def __init__(self, input_size,n_heatmaps, bb):
+    def __init__(self, input_size,n_heatmaps, bb, is_final = False):
         super(intermediate_supervision, self).__init__()
+        self.is_final = is_final
+        
         self.bb = bb
-        self.inter = nn.Conv2d(input_size, input_size, kernel_size=1, stride=1, padding=0)
-        self.output = nn.Sequential()
-        self.output.add_module('out_conv', 
-                               nn.Conv2d(input_size, n_heatmaps, kernel_size=1, stride=1, padding=0))
-        self.output.add_module('out_inter',
-                                nn.Conv2d(n_heatmaps, input_size, kernel_size=1, stride=1, padding=0)) 
+        
+        if not is_final:
+        
+            self.inter = nn.Conv2d(input_size, input_size, kernel_size=1, stride=1, padding=0)
+            self.output = nn.Sequential()
+            self.output.add_module('out_conv', 
+                                nn.Conv2d(input_size, n_heatmaps, kernel_size=1, stride=1, padding=0))
+            self.output.add_module('out_inter',
+                                    nn.Conv2d(n_heatmaps, input_size, kernel_size=1, stride=1, padding=0)) 
+        else:
+            self.out = nn.Conv2d(input_size, n_heatmaps, kernel_size=1, stride=1, padding=0)
         
     def forward(self, x):
-        y = self.bb(x)
-        y1 = self.inter(y)
-        y2 = self.output(y)
+        '''
+          >______________(x)__________
+            |                         |
+            |____inter (y1)__________(+)___(y)_>
+            |                         |
+            |____out (y2)__ out (y3)__|
         
-        y = y + y1 + y2
-        #print(y.size())
-        return y
+        return y, [y2, y3]
+        '''
+        y = self.bb(x)
+        if not self.is_final:
+            #inter
+            y1 = self.inter(y)
+            #out
+            y2 = self.output[0](y)
+            y3 = self.output[1](y2)
+            # x residual
+            y = x + y1 + y3
+            #print(y.size())
+            return y, [y2, y3]
+        
+        else:
+            return self.out(y)
         
 ###### Hourglass stacked ########
  
@@ -180,8 +203,7 @@ def default_input_block(out):
     return module
     
     
-    
-    
+  
 class hourglass(nn.Module):
     
     def __init__(self, 
@@ -216,12 +238,28 @@ class hourglass(nn.Module):
         model.append(self.input_block(self.stacked_ch))
         for i in range(self.n_stacked_hg):
             block = hourglass_module(self.stacked_ch, self.bb_cb, self.n_reduce_blocks, self.n_basis_blocks, self.n_filter_blocks, self.use_bn)
-            model.append(intermediate_supervision(self.stacked_ch, self.n_heatmaps, block))
+            if (i < self.n_stacked_hg-1):
+                model.append(intermediate_supervision(self.stacked_ch, self.n_heatmaps, block))
+            else:
+                model.append(intermediate_supervision(self.stacked_ch, self.n_heatmaps, block, True))
+                        
         return model
     
-    def forward(self, x):
-        for i, block in enumerate(self.model):
-            #print(i)
-            x = block(x)
+    def forward(self, x, is_train=False):
+        if is_train:
+            out = []
+            x = self.model[0](x)
+            for i, block in enumerate(self.model[1:-1]):
+                #print(i)
+                x, tx = block(x)
+                out.append(tx)
+            x = self.model[-1](x)
+            out.append(x)
+            return x, out
+        else:
+            x = self.model[0](x)
+            for i, block in enumerate(self.model[1:-1]):
+                x, _ = block(x)
+            x = self.model[-1](x)
+            return x
             
-        return x

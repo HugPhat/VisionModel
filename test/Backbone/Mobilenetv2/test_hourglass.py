@@ -44,10 +44,38 @@ def test_module(channels):
 
 #####
 
-x = torch.ones((1, 3, 256, 256))
-hg_model = hg.hourglass(19)
-hg_model(x)
-s =0 
-for m in hg_model.parameters():
-    s += m.cpu().numel()
-print(s)
+def test_model():
+    x = torch.ones((1, 3, 256, 256))
+    hg.use_bb_with_dw = False
+    
+    hg_model = hg.hourglass(n_heatmaps= 19, stacked_ch= 128)
+    #hg_model = torch.nn.DataParallel(hg_model)
+    
+    hg_model.eval()
+
+    ## timing cpu
+    for _ in range(5):
+        with torch.no_grad():
+            tic = time()
+            hg_model(x)
+            print(f'time: {round(time() - tic, 4)*1000} ms')
+    ## timing gpu
+    hg_model.cuda()
+    x = x.type(torch.cuda.FloatTensor).cuda()
+    for _ in range(5):
+        with torch.no_grad():
+            tic = time()
+            hg_model(x, True)
+            print(f'time: {round(time() - tic, 4)*1000} ms')
+
+    hg_model.cpu()
+    # number of paramters
+    s = 0
+    for m in hg_model.parameters():
+        s += m.cpu().numel()
+    print(s)
+    
+    return hg_model 
+    
+model = test_model()
+#torch.save(model.state_dict(), 'hg.pth')
