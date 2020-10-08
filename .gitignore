@@ -13,3 +13,5 @@ lib64
 __pycache__
 *.pth
 *.jpg
+
+*.egg-info
