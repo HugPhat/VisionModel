@@ -30,11 +30,11 @@ class ColorModel(nn.Module):
                                     ])
         self.model = nn.ModuleList()
         self.model.append(conv(0, 3, 16, 3, 1, 1, use_bn=use_bn, use_do=use_drop))
-        self.model.append(nn.MaxPool2d(kernel_size=2, stride=2)) # 32x32
+        self.model.append(nn.MaxPool2d(kernel_size=2, stride=2)) # 48x48
         self.model.append(conv(1, 16, 32, 3, 1, 1, use_bn=use_bn, use_do=use_drop))
-        self.model.append(nn.MaxPool2d(kernel_size=2, stride=2)) # 16x16
+        self.model.append(nn.MaxPool2d(kernel_size=2, stride=2)) # 24x24
         self.model.append(conv(2, 32, 32, 3, 1, 1, use_bn=use_bn, use_do=use_drop))
-        self.model.append(nn.MaxPool2d(kernel_size=2, stride=2)) # 8x8
+        self.model.append(nn.MaxPool2d(kernel_size=2, stride=2)) # 12x12
         self.model.append(conv(3, 32, 16, 1, 1, 0, use_bn=use_bn, use_do=use_drop))# depth wise
         self.model.append(nn.AvgPool2d(8))
         self.model.append(Flatten())
