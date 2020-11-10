@@ -15,3 +15,7 @@ __pycache__
 *.jpg
 
 *.egg-info
+
+.vscode
+
+.ipynb_checkpoints

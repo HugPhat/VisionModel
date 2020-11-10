@@ -123,9 +123,9 @@ class Tiramisu(nn.Module):
                 if watching:
                     print(f'match==>{k}')
                 tmp_pretrained_dict.update({k: v})
-        else:
-            if watching:
-                print(f'unmatch==>{k}')
+            else:
+                if watching:
+                    print(f'unmatch==>{k}')
         # 2. overwrite entries in the existing state dict
         model_dict.update(tmp_pretrained_dict)
         # 3. load the new state dict
