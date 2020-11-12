@@ -142,7 +142,6 @@ class MobileNetv2(nn.Module):
                 print(x.size())    
         x = F.avg_pool2d(x, 7)
         x = x.mean(3).mean(2)
-        print(x.size())
         x = self.classifier(x)
         x = F.softmax(x, dim=1)
         return x    
