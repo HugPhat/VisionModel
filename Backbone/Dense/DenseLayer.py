@@ -10,8 +10,6 @@ class DenseLayer(nn.Module):
 
     def init_layer(self, n_input, n_output):
         module = nn.Sequential()
-        module.add_module('BN', nn.BatchNorm2d(n_input))
-        module.add_module('ReLU', nn.ReLU(inplace=True))
         module.add_module('CONV', nn.Conv2d(
                           n_input, n_output,
                           kernel_size=3,
@@ -19,6 +17,8 @@ class DenseLayer(nn.Module):
                           stride=1,
                           bias=True
                           ))
+        module.add_module('BN', nn.BatchNorm2d(n_output))
+        module.add_module('ReLU', nn.ReLU(inplace=True))
         module.add_module('Drop', nn.Dropout2d(0.2))
         return module
 
@@ -69,8 +69,6 @@ class TransitionDown(nn.Module):
     def __init__(self, n_input, n_out):
         super(TransitionDown, self).__init__()
         self.module = nn.Sequential()
-        self.module.add_module('BN', nn.BatchNorm2d(n_input))
-        self.module.add_module('ReLu', nn.ReLU(inplace=True))
         self.module.add_module('Conv', nn.Conv2d(
             in_channels=n_input,
             out_channels=n_out,
@@ -79,6 +77,8 @@ class TransitionDown(nn.Module):
             padding=0,
             bias=True
         ))
+        self.module.add_module('BN', nn.BatchNorm2d(n_out))
+        self.module.add_module('ReLu', nn.ReLU(inplace=True))
         self.module.add_module('Drop', nn.Dropout2d(0.2))
         self.module.add_module('MaxPool', nn.MaxPool2d(kernel_size=(2, 2)))
 
@@ -104,14 +104,14 @@ class TransitionUp(nn.Module):
 class TransitionUp(nn.Module):
     def __init__(self, n_inp, n_out):
         super(TransitionUp, self).__init__()
-        self.bn = nn.BatchNorm2d(n_inp)
-        self.relu = nn.ReLU(inplace=True)
         self.conv = nn.ConvTranspose2d(n_inp, n_out,
                                        kernel_size=3, 
                                        stride=2,
                                        padding=1,
                                        bias=True,
                                        )
+        self.bn = nn.BatchNorm2d(n_out)
+        self.relu = nn.ReLU(inplace=True)
         #self.add_module('pool', nn.AvgPool2d(kernel_size=2, stride=2))
 
     def forward(self, x, output_size):
